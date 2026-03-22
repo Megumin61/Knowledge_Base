@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+:root{
+  --ink:#1a1814;--ink2:#4a4740;--ink3:#8a8680;--ink4:#b8b4ae;
+  --paper:#f5f2ee;--p2:#ede9e3;--p3:#e4dfd8;--p4:#d8d2c9;
+  --w:#fff;
+  --ac:#2d5a3d;--ac2:#4a8c61;--ac3:#6aaa7e;--acl:#e8f2eb;--acm:#c2e0ca;
+  --gd:#9a7020;--gd2:#b8860b;--gdl:#f5f0e0;--gdm:#e8d8a0;
+  --rs:#8b3a2e;--rl:#faeae8;
+  --r8:8px;--r12:12px;--r16:16px;
+  --sh:0 1px 3px rgba(26,24,20,.07),0 4px 16px rgba(26,24,20,.05);
+  --sh2:0 2px 12px rgba(26,24,20,.1),0 8px 40px rgba(26,24,20,.09);
+  --pg:32px; /* consistent page padding */
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.5;overflow:hidden}
+.app{display:flex;height:100vh}
+
+/* ── Sidebar ── */
+.sb{width:210px;flex-shrink:0;background:var(--p2);border-right:1px solid var(--p3);display:flex;flex-direction:column}
+.sb-logo{padding:16px 14px 12px;border-bottom:1px solid var(--p3)}
+.sb-brand{font-family:'Instrument Serif',serif;font-size:18px;color:var(--ink);letter-spacing:-.02em}
+.sb-brand span{color:var(--ac2)}
+.sb-sub{font-size:9.5px;color:var(--ink4);letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+.sb-nav{padding:8px 7px 0}
+.sbi{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r8);font-size:12.5px;color:var(--ink2);cursor:pointer;transition:all .15s;margin-bottom:1px;user-select:none;position:relative}
+.sbi:hover{background:var(--p3)}.sbi.on{background:var(--ac);color:#fff}
+.sbi svg{width:13px;height:13px;flex-shrink:0;opacity:.65}.sbi.on svg{opacity:1}
+.sb-badge{margin-left:auto;font-size:10px;background:var(--p3);color:var(--ink3);padding:1px 6px;border-radius:10px}
+.sbi.on .sb-badge{background:rgba(255,255,255,.22);color:rgba(255,255,255,.85)}
+.sb-badge.red{background:var(--rl);color:var(--rs)}
+.sb-sep{height:1px;background:var(--p3);margin:7px 9px}
+.sb-sec{font-size:10px;color:var(--ink4);letter-spacing:.07em;text-transform:uppercase;padding:7px 16px 4px}
+.sb-dom{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--r8);font-size:12px;color:var(--ink2);cursor:pointer;transition:all .15s;margin:1px 7px}
+.sb-dom:hover{background:var(--p3)}.sb-dom.on{background:var(--acl);color:var(--ac)}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-dc{margin-left:auto;font-size:10px;color:var(--ink4)}.sb-dom.on .sb-dc{color:var(--ac3)}
+.sb-new{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--r8);font-size:12px;color:var(--ink4);cursor:pointer;font-style:italic;margin:1px 7px;transition:all .15s}
+.sb-new:hover{background:var(--p3);color:var(--ink2)}
+.sb-doms{flex:1;overflow-y:auto;padding-bottom:6px}
+.sb-foot{padding:9px;border-top:1px solid var(--p3)}
+.plug-pill{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--r8);background:var(--acl);font-size:11px;color:var(--ac);cursor:pointer}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--ac2);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+
+/* ── Main ── */
+.main{flex:1;overflow:hidden;position:relative}
+.view{position:absolute;inset:0;overflow-y:auto;background:var(--paper);display:flex;flex-direction:column;align-items:flex-start}
+.view.hidden{display:none}
+
+/* ── Page wrapper — consistent width ── */
+.pg{width:100%;max-width:880px;padding:24px var(--pg) 56px;margin:0 auto}
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px}
+.pg-title{font-family:'Instrument Serif',serif;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--ink3)}
+
+/* ── Shared components ── */
+.btn{padding:7px 14px;border-radius:var(--r8);font-size:12.5px;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.bp{background:var(--ac);border-color:var(--ac);color:#fff}.bp:hover{background:var(--ac2)}
+.bo{background:var(--w);border-color:var(--p3);color:var(--ink2)}.bo:hover{border-color:var(--ac3);color:var(--ac);background:var(--acl)}
+.bs{padding:5px 11px;font-size:11.5px}
+.sec{font-size:10.5px;font-weight:500;color:var(--ink3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.chip{padding:4px 11px;border-radius:20px;font-size:11.5px;border:1px solid var(--p3);color:var(--ink2);background:var(--w);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.chip:hover{border-color:var(--ac3);color:var(--ac)}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.chip.ai{border-style:dashed;color:var(--ink3)}.chip.ai:hover{border-color:var(--gd2);color:var(--gd);background:var(--gdl)}
+.m-chip{padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--p3);color:var(--ink2);background:var(--w);cursor:pointer;transition:all .15s}
+.m-chip:hover{border-color:var(--ac3)}.m-chip.sel{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+/* Modal */
+.ov{position:fixed;inset:0;background:rgba(26,24,20,.4);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.show{opacity:1;pointer-events:all}
+.modal{background:var(--w);border-radius:var(--r16);padding:24px;width:500px;max-width:94%;box-shadow:var(--sh2);transform:translateY(10px);transition:transform .2s;max-height:90vh;overflow-y:auto}
+.ov.show .modal{transform:translateY(0)}
+.m-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:3px}
+.m-sub{font-size:12px;color:var(--ink3);margin-bottom:18px;line-height:1.6}
+.m-lbl{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:7px}
+.m-in{width:100%;padding:9px 12px;border:1px solid var(--p3);border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;margin-bottom:13px}
+.m-in:focus{border-color:var(--ac3)}
+.m-ta{width:100%;padding:9px 12px;border:1px solid var(--p3);border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--ink);outline:none;resize:none;min-height:78px;transition:border-color .15s;margin-bottom:13px;line-height:1.6}
+.m-ta:focus{border-color:var(--ac3)}
+.m-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.mbtn{padding:8px 18px;border-radius:var(--r8);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid}
+.mbtn.cn{background:var(--w);border-color:var(--p3);color:var(--ink2)}
+.mbtn.cf{background:var(--ac);border-color:var(--ac);color:#fff}.mbtn.cf:hover{background:var(--ac2)}
+.gen-btn{width:100%;padding:9px;border-radius:var(--r8);border:1.5px solid var(--acm);background:var(--acl);color:var(--ac);font-size:12.5px;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.gen-btn:hover:not(:disabled){background:var(--ac);color:#fff;border-style:solid}
+.ldots span{animation:blink 1.2s infinite}.ldots span:nth-child(2){animation-delay:.2s}.ldots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(50px);background:rgba(26,24,20,.9);color:#fff;padding:9px 20px;border-radius:22px;font-size:12.5px;opacity:0;transition:all .22s;pointer-events:none;z-index:500;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--p3);border-radius:2px}
+
+/* ── Content item card ── */
+.ci{background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);margin-bottom:9px;overflow:hidden;cursor:pointer;transition:all .15s}
+.ci:hover{box-shadow:var(--sh);border-color:var(--p4)}
+.ci-main{padding:13px 15px;display:flex;gap:11px}
+.ci-src{width:32px;height:32px;border-radius:8px;background:var(--p2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+.ci-body{flex:1;min-width:0}
+.ci-r1{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;margin-bottom:3px}
+.ci-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4}
+.ci-sl{font-size:10px;color:var(--ink3);white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px}
+.ci-track{font-size:9.5px;background:var(--p2);color:var(--ink3);padding:1px 6px;border-radius:7px}
+.ci-sum{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:7px}
+.ci-ft{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ci-tag{padding:2px 7px;border-radius:9px;font-size:10px;background:var(--p2);color:var(--ink2)}
+.ci-dom{font-size:10px;padding:2px 7px;border-radius:9px}
+.ci-th{font-size:10px;color:var(--gd2);background:var(--gdl);padding:2px 7px;border-radius:9px}
+.ci-tp{background:var(--gdl);border-top:1px solid var(--gdm);padding:9px 15px 9px 58px}
+.ci-tl{font-size:10px;color:var(--gd2);font-weight:500;margin-bottom:3px}
+.ci-tt{font-size:12px;color:#5a3d00;line-height:1.6;font-style:italic}
+.ci-acts{display:flex;align-items:center;gap:7px;padding:8px 15px;border-top:1px dashed var(--p3);background:var(--paper)}
+.ci-ab{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;border:1px solid var(--p3);background:var(--w);font-size:11px;color:var(--ink2);cursor:pointer;transition:all .15s}
+.ci-ab:hover{border-color:var(--gd2);color:var(--gd)}
+.ci-exp{font-size:11px;color:var(--ink3);cursor:pointer;margin-left:auto;transition:color .15s}.ci-exp:hover{color:var(--ink2)}
+.ci-md{background:var(--p2);border-top:1px solid var(--p3);padding:11px 15px 11px 58px;font-size:12px;color:var(--ink2);line-height:1.7;display:none}
+.ci-md.open{display:block}
+.ci-md h3{font-size:11px;font-weight:500;color:var(--ink);margin:7px 0 4px;text-transform:uppercase;letter-spacing:.04em;opacity:.6}
+.ci-md h3:first-child{margin-top:0}
+.ci-md ul{padding-left:14px}.ci-md li{margin-bottom:3px}
+
+/* ── HOME ── */
+.chat-box{background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);box-shadow:var(--sh);overflow:hidden;margin-bottom:24px}
+.chat-msgs{padding:14px 16px;display:flex;flex-direction:column;gap:9px;min-height:72px}
+.msg-ai{align-self:flex-start;background:var(--p2);padding:9px 13px;border-radius:12px 12px 12px 4px;font-size:13px;max-width:84%;line-height:1.65;color:var(--ink)}
+.msg-u{align-self:flex-end;background:var(--ac);color:#fff;padding:9px 13px;border-radius:12px 12px 4px 12px;font-size:13px;max-width:72%;line-height:1.5}
+.msg-cite{font-size:10.5px;color:var(--ink4);margin-top:5px;padding-top:5px;border-top:1px solid var(--p3)}
+.chat-ir{display:flex;align-items:center;border-top:1px solid var(--p3)}
+.chat-in{flex:1;padding:12px 15px;font-size:13px;font-family:'DM Sans',sans-serif;border:none;outline:none;background:transparent;color:var(--ink)}
+.chat-in::placeholder{color:var(--ink4)}
+.chat-send{width:32px;height:32px;border-radius:var(--r8);background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:10px;flex-shrink:0;transition:background .15s}
+.chat-send:hover{background:var(--ac2)}
+.chat-foot{padding:7px 14px 9px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--p3);background:var(--paper);flex-wrap:wrap}
+.sc-chip{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;border:1px solid var(--p3);font-size:11.5px;color:var(--ink2);cursor:pointer;background:var(--paper);transition:all .15s}
+.sc-chip:hover{border-color:var(--ac3);color:var(--ac)}.sc-chip.on{background:var(--acl);border-color:var(--acm);color:var(--ac)}
+.home-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.h-card{background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);padding:14px 16px}
+.h-dom-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r8);background:var(--w);border:1px solid var(--p3);margin-bottom:6px;cursor:pointer;transition:all .15s}
+.h-dom-row:hover{border-color:var(--acm);box-shadow:var(--sh)}
+.h-dom-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.h-rec{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--p3)}
+.h-rec:last-child{border-bottom:none}
+.h-rec-ico{width:26px;height:26px;border-radius:6px;background:var(--p2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+
+/* ── LIBRARY ── */
+.lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.d-card{background:var(--w);border:1px solid var(--p3);border-radius:var(--r16);padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.d-card::before{content:'';position:absolute;inset:0;background:var(--acl);opacity:0;transition:opacity .2s}
+.d-card:hover{border-color:var(--acm);box-shadow:var(--sh2);transform:translateY(-2px)}.d-card:hover::before{opacity:.3}
+.d-card-in{position:relative;z-index:1}
+.d-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.d-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.d-menu{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--ink4);cursor:pointer;opacity:0;transition:opacity .15s}
+.d-card:hover .d-menu{opacity:1}.d-menu:hover{background:var(--p2);color:var(--ink2)}
+.d-name{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.d-desc{font-size:11.5px;color:var(--ink3);line-height:1.55;margin-bottom:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.d-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.d-tag{padding:2px 8px;border-radius:10px;font-size:10px;background:var(--p2);color:var(--ink2)}
+.d-ft{display:flex;align-items:center;justify-content:space-between}
+.d-ct{font-size:11.5px;color:var(--ink3)}.d-ct strong{font-weight:500;color:var(--ink2)}
+.d-sk{font-size:10px;padding:3px 8px;border-radius:9px}
+.d-sk.has{background:var(--acl);color:var(--ac)}.d-sk.none{background:var(--p2);color:var(--ink3);border:1px dashed var(--p4)}
+.d-new{background:var(--p2);border:1.5px dashed var(--p4);border-radius:var(--r16);padding:18px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:188px;gap:9px}
+.d-new:hover{border-color:var(--ac3);background:var(--acl)}
+.d-new:hover .d-new-txt{color:var(--ac)}
+.d-new-ico{font-size:26px;opacity:.4}.d-new-txt{font-size:12.5px;color:var(--ink3)}
+
+/* ── DOMAIN DETAIL ── */
+.dv-back{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink3);cursor:pointer;margin-bottom:14px;transition:color .15s}
+.dv-back:hover{color:var(--ac)}
+.dv-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:10px}
+.dv-ico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.dv-name{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);letter-spacing:-.02em}
+.dv-meta{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.dv-stats{display:flex;gap:9px;margin-bottom:18px}
+.dv-stat{background:var(--w);border:1px solid var(--p3);border-radius:var(--r8);padding:9px 14px;flex:1}
+.dv-stat.hl{background:var(--acl);border-color:var(--acm)}
+.dv-stat-n{font-size:19px;font-weight:500;color:var(--ink);letter-spacing:-.02em}.dv-stat.hl .dv-stat-n{color:var(--ac)}
+.dv-stat-l{font-size:10.5px;color:var(--ink3)}.dv-stat.hl .dv-stat-l{color:var(--ac2)}
+
+/* ── CONTENT DETAIL ── */
+.cv-bar{padding:12px var(--pg);border-bottom:1px solid var(--p3);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--w);z-index:10;flex-shrink:0;width:100%}
+.cv-back{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink3);cursor:pointer;padding:5px 9px;border-radius:var(--r8);transition:all .15s}
+.cv-back:hover{color:var(--ac);background:var(--acl)}
+.cv-body{max-width:740px;margin:0 auto;padding:28px var(--pg) 72px;width:100%}
+.cv-tabs{display:flex;border-bottom:1px solid var(--p3);margin-bottom:22px}
+.cv-tab{padding:9px 15px;font-size:13px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:5px}
+.cv-tab:hover{color:var(--ink2)}.cv-tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:500}
+.cv-tab-dot{width:5px;height:5px;border-radius:50%;background:var(--gd2)}
+.cv-pane{display:none}.cv-pane.on{display:block}
+.md h2{font-family:'Instrument Serif',serif;font-size:18px;color:var(--ink);margin:24px 0 8px;letter-spacing:-.01em}
+.md h2:first-child{margin-top:0}
+.md h3{font-size:11px;font-weight:500;color:var(--ink);margin:16px 0 7px;text-transform:uppercase;letter-spacing:.07em;opacity:.55}
+.md p{font-size:14px;color:var(--ink2);line-height:1.85;margin-bottom:12px}
+.md ul,.md ol{padding-left:18px;margin-bottom:12px}
+.md li{font-size:14px;color:var(--ink2);line-height:1.75;margin-bottom:5px}
+.md strong{font-weight:500;color:var(--ink)}
+.md blockquote{border-left:3px solid var(--acm);padding:9px 14px;background:var(--acl);border-radius:0 var(--r8) var(--r8) 0;margin:14px 0;font-size:14px;color:var(--ink2);font-style:italic;line-height:1.7}
+.md-hl{background:var(--gdl);padding:1px 5px;border-radius:4px;color:var(--gd);font-style:normal}
+.md-hr{height:1px;background:var(--p3);margin:20px 0}
+.md-src{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r8);background:var(--p2);font-size:12.5px;color:var(--ink2);text-decoration:none;border:1px solid var(--p3);transition:all .15s;margin-top:6px}
+.md-src:hover{border-color:var(--ac3);color:var(--ac);background:var(--acl)}
+.th-card{background:var(--gdl);border:1px solid var(--gdm);border-radius:var(--r12);padding:16px;margin-bottom:11px}
+.th-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.th-meta{font-size:11px;color:var(--gd2);display:flex;align-items:center;gap:6px}
+.th-edit{font-size:11px;color:var(--gd2);cursor:pointer;opacity:.7;padding:3px 7px;border-radius:6px;transition:all .15s}
+.th-edit:hover{opacity:1;background:var(--gdm)}
+.th-txt{font-size:13.5px;color:#5a3d00;line-height:1.75;font-style:italic}
+.th-add{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--gdm);flex-wrap:wrap}
+.th-btn{padding:8px 16px;border-radius:20px;font-size:12.5px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.th-v{background:var(--gdl);border:1px solid var(--gdm);color:var(--gd)}.th-v:hover{background:var(--gdm)}
+.th-v.rec{background:var(--rl);border-color:#d4a0a0;color:var(--rs);animation:rec 1s ease-in-out infinite}
+@keyframes rec{0%,100%{box-shadow:0 0 0 0 rgba(139,58,46,.15)}50%{box-shadow:0 0 0 7px rgba(139,58,46,0)}}
+.th-t{background:var(--w);border:1px solid var(--p3);color:var(--ink2)}.th-t:hover{border-color:var(--ac3);color:var(--ac)}
+.ta-ov{position:fixed;inset:0;background:rgba(26,24,20,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.ta-ov.show{opacity:1;pointer-events:all}
+.ta-sheet{background:var(--w);border-radius:var(--r16) var(--r16) 0 0;padding:22px;width:100%;max-width:680px;transform:translateY(20px);transition:transform .2s;box-shadow:var(--sh2)}
+.ta-ov.show .ta-sheet{transform:translateY(0)}
+.ta-in{width:100%;padding:10px 12px;border:1px solid var(--gdm);border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--ink);background:var(--gdl);resize:none;min-height:90px;outline:none;transition:border-color .15s;line-height:1.6}
+.ta-in:focus{border-color:var(--gd2);background:var(--w)}
+.ta-acts{display:flex;justify-content:flex-end;gap:7px;margin-top:9px}
+.ta-btn{padding:7px 16px;border-radius:var(--r8);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;border:1px solid}
+.ta-btn.cn{background:var(--w);border-color:var(--p3);color:var(--ink2)}
+.ta-btn.sv{background:var(--gd2);border-color:var(--gd2);color:#fff}.ta-btn.sv:hover{background:var(--gd)}
+
+/* ── SKILLS ── */
+.sk-tabs{display:flex;border-bottom:1px solid var(--p3);margin-bottom:20px}
+.sk-tab{padding:9px 16px;font-size:13px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.sk-tab:hover{color:var(--ink2)}.sk-tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:500}
+.sk-pane{display:none}.sk-pane.on{display:block}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sk-card{background:var(--w);border:1px solid var(--p3);border-radius:var(--r16);padding:18px;transition:all .2s}
+.sk-card:hover{box-shadow:var(--sh2);border-color:var(--acm)}
+.sk-card-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sk-pub{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--acl);color:var(--ac)}
+.sk-item-row{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--p3);transition:background .12s}
+.sk-item-row:last-child{border-bottom:none}.sk-item-row:hover{background:var(--p2)}
+.sk-item-row input[type=checkbox]{margin-top:2px;accent-color:var(--ac);flex-shrink:0}
+.sk-ititle{font-size:12px;color:var(--ink);line-height:1.4}
+.sk-imeta{font-size:10.5px;color:var(--ink3);margin-top:2px}
+.sk-ith{font-size:10px;color:var(--gd2);margin-top:2px}
+/* skill preview tabs */
+.skpt{flex:1;padding:9px 6px;text-align:center;font-size:12px;color:var(--ink2);cursor:pointer;transition:all .15s;border-right:1px solid var(--p3)}
+.skpt:last-child{border-right:none}.skpt:hover{background:var(--p2)}.skpt.on{background:var(--ac);color:#fff;font-weight:500}
+
+/* ── TRACKING (news-feed style) ── */
+.track-day-header{display:flex;align-items:center;gap:10px;margin:20px 0 12px}
+.track-day-line{flex:1;height:1px;background:var(--p3)}
+.track-day-label{font-size:11px;color:var(--ink3);white-space:nowrap;font-weight:500}
+.track-item{background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);margin-bottom:10px;overflow:hidden;transition:all .15s}
+.track-item:hover{box-shadow:var(--sh);border-color:var(--p4)}
+.track-item-main{padding:14px 16px;display:flex;gap:12px}
+.track-item-ico{width:34px;height:34px;border-radius:8px;background:var(--p2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px}
+.track-item-body{flex:1;min-width:0}
+.track-item-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;margin-bottom:4px}
+.track-item-sum{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:8px}
+.track-item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.track-src-badge{font-size:10px;padding:2px 8px;border-radius:8px;background:var(--p2);color:var(--ink3)}
+.track-kw-badge{font-size:10px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)}
+.track-rel{font-size:10px;color:var(--ac2);font-weight:500}
+.track-saved{font-size:10px;color:var(--ink4)}
+.track-item-foot{padding:8px 16px;border-top:1px solid var(--p3);background:var(--paper);display:flex;align-items:center;justify-content:space-between}
+.track-expand{font-size:11px;color:var(--ink3);cursor:pointer;transition:color .15s}.track-expand:hover{color:var(--ink2)}
+.track-inbox-btn{padding:5px 14px;border-radius:15px;font-size:11.5px;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--ac);background:var(--ac);color:#fff;transition:all .15s}
+.track-inbox-btn:hover{background:var(--ac2)}.track-inbox-btn.done{background:var(--acl);border-color:var(--acm);color:var(--ac);pointer-events:none}
+.track-detail{background:var(--p2);border-top:1px solid var(--p3);padding:12px 16px;font-size:12px;color:var(--ink2);line-height:1.7;display:none}
+.track-detail.open{display:block}
+/* Track settings bar */
+.track-kw{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r8);background:var(--p2);margin-bottom:6px;font-size:12.5px;color:var(--ink)}
+.track-dot{width:7px;height:7px;border-radius:50%;background:var(--ac2);flex-shrink:0}
+.track-kw-meta{font-size:11px;color:var(--ink3);margin-left:auto}
+.track-ch{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:var(--r8);border:1px solid var(--p3);background:var(--w);font-size:12px;color:var(--ink2);cursor:pointer;transition:all .15s}
+.track-ch:hover{border-color:var(--ac3)}.track-ch.on{border-color:var(--ac);background:var(--acl);color:var(--ac)}
+
+/* ── COMMUNITY ── */
+.comm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.comm-card{background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);padding:15px;transition:all .2s;cursor:pointer}
+.comm-card:hover{box-shadow:var(--sh2);border-color:var(--acm);transform:translateY(-1px)}
+.comm-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.comm-stat{font-size:10.5px;color:var(--ink3);display:flex;align-items:center;gap:4px}
+
+/* ── AGENT CHAT ── */
+.agent-wrap{display:flex;flex-direction:column;height:100%;background:var(--w);width:100%}
+.agent-bar{padding:12px 24px;border-bottom:1px solid var(--p3);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--w)}
+.agent-bar-ico{width:36px;height:36px;border-radius:10px;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.agent-msgs{flex:1;overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;max-width:780px;margin:0 auto;width:100%}
+.ag-u{align-self:flex-end;background:var(--ac);color:#fff;padding:10px 14px;border-radius:14px 14px 4px 14px;font-size:13px;max-width:68%;line-height:1.6}
+.ag-ai{align-self:flex-start;max-width:84%}
+.ag-bubble{background:var(--p2);padding:12px 16px;border-radius:14px 14px 14px 4px;font-size:13px;color:var(--ink);line-height:1.75}
+.ag-cite{margin-top:8px;padding:8px 12px;background:var(--paper);border-radius:var(--r8);border:1px solid var(--p3)}
+.ag-cite-lbl{font-size:10.5px;color:var(--ink4);margin-bottom:5px;font-weight:500}
+.ag-cite-th{font-size:11px;color:var(--gd2);cursor:pointer;margin-bottom:3px;display:flex;align-items:center;gap:5px}.ag-cite-th:hover{text-decoration:underline}
+.ag-cite-ref{font-size:11px;color:var(--ac2);cursor:pointer;margin-bottom:3px;display:flex;align-items:center;gap:5px}.ag-cite-ref:hover{text-decoration:underline}
+.ag-acts{display:flex;gap:6px;margin-top:7px}
+.ag-act{font-size:11px;color:var(--ink3);cursor:pointer;padding:3px 8px;border-radius:7px;border:1px solid var(--p3);background:var(--w);transition:all .15s}
+.ag-act:hover{border-color:var(--ac3);color:var(--ac)}
+.agent-in-area{padding:14px 24px 18px;border-top:1px solid var(--p3);flex-shrink:0;background:var(--paper)}
+.agent-in-box{display:flex;align-items:flex-end;gap:8px;background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);padding:10px 14px;transition:border-color .15s;max-width:780px;margin:0 auto}
+.agent-in-box:focus-within{border-color:var(--ac3)}
+.ag-in{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:transparent;resize:none;min-height:22px;max-height:120px;line-height:1.6}
+.ag-in::placeholder{color:var(--ink4)}
+.ag-send{width:32px;height:32px;border-radius:var(--r8);background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.ag-send:hover{background:var(--ac2)}
+
+/* ── PRICING ── */
+.price-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.price-card{background:var(--w);border:1px solid var(--p3);border-radius:var(--r16);padding:22px;position:relative}
+.price-card.featured{border:2px solid var(--ac);background:var(--acl)}
+.price-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--ac);color:#fff;font-size:10.5px;padding:3px 12px;border-radius:10px;white-space:nowrap}
+.price-name{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.price-amt{font-family:'Instrument Serif',serif;font-size:32px;color:var(--ink);letter-spacing:-.03em;line-height:1;margin-bottom:4px}
+.price-amt span{font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink3)}
+.price-card.featured .price-amt{color:var(--ac)}
+.price-desc{font-size:12px;color:var(--ink3);margin-bottom:18px;line-height:1.5}
+.price-feat{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink2);margin-bottom:8px;line-height:1.5}
+.price-feat::before{content:'✓';color:var(--ac2);flex-shrink:0;font-size:12px;margin-top:1px}
+.price-feat.dim::before{content:'—';color:var(--ink4)}.price-feat.dim{color:var(--ink4)}
+
+/* ALL CONTENTS search */
+.search-wrap{position:relative}
+.search-in{width:100%;padding:9px 14px 9px 34px;border:1px solid var(--p3);border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--w);outline:none;transition:border-color .15s}
+.search-in:focus{border-color:var(--ac3)}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.4;font-size:13px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-brand">Kumo<span>.</span></div>
+    <div class="sb-sub">Personal Knowledge</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sbi" id="sbi-home" onclick="V('home')">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M1 6l6-5 6 5v7H9V9H5v4H1z"/></svg>首页
+    </div>
+    <div class="sbi" id="sbi-library" onclick="V('library')">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M2 2h4v4H2zm6 0h4v4H8zM2 8h4v4H2zm6 0h4v4H8z"/></svg>知识库
+      <span class="sb-badge">4</span>
+    </div>
+    <div class="sbi" id="sbi-contents" onclick="V('contents')">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 3h12M1 7h9M1 11h6"/></svg>所有内容
+      <span class="sb-badge">47</span>
+    </div>
+    <div class="sbi" id="sbi-skills" onclick="V('skills')">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.5 3 3.5.5L9.5 7l.5 3.5L7 9l-3 1.5.5-3.5L2 4.5l3.5-.5z"/></svg>Skills
+      <span class="sb-badge">3</span>
+    </div>
+    <div class="sbi" id="sbi-tracking" onclick="V('tracking')">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3l2 1.5"/></svg>知识追踪
+      <span class="sb-badge red">3</span>
+    </div>
+    <div class="sbi" id="sbi-community" onclick="V('community')">
+      <svg viewBox="0 0 14 14" fill="currentColor"><circle cx="5" cy="4" r="1.8"/><circle cx="9" cy="4" r="1.8"/><path d="M1 12c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5"/><path d="M11 8.5c1.4.4 2.4 1.6 2.4 3" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>社区
+    </div>
+  </div>
+  <div class="sb-sep"></div>
+  <div class="sb-sec">我的领域</div>
+  <div class="sb-doms">
+    <div class="sb-dom on" id="sd-ai" onclick="enterDomain('ai',this)"><div class="sb-dot" style="background:#2d5a3d"></div>AI & 产品<span class="sb-dc">23</span></div>
+    <div class="sb-dom" id="sd-biz" onclick="enterDomain('biz',this)"><div class="sb-dot" style="background:#9a7020"></div>商业思维<span class="sb-dc">11</span></div>
+    <div class="sb-dom" id="sd-design" onclick="enterDomain('design',this)"><div class="sb-dot" style="background:#5a3d8a"></div>设计<span class="sb-dc">8</span></div>
+    <div class="sb-dom" id="sd-cog" onclick="enterDomain('cog',this)"><div class="sb-dot" style="background:#3d6a8a"></div>认知与学习<span class="sb-dc">5</span></div>
+    <div class="sb-new" onclick="openDomainModal()">+ 新建领域</div>
+  </div>
+  <div class="sb-foot">
+    <div class="plug-pill" onclick="T('插件已连接，上次同步 3分钟前')"><div class="pulse"></div>浏览器插件已连接</div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+<!-- HOME -->
+<div class="view hidden" id="view-home">
+<div class="pg">
+  <div style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink2);font-style:italic;letter-spacing:-.01em;margin-bottom:18px">沉淀你所学，<span style="color:var(--ac);font-style:normal">输出你所想</span></div>
+  <div class="chat-box">
+    <div class="chat-msgs" id="chat-msgs"><div class="msg-ai">你好！我是你的 Kumo 知识助手。你可以问我任何事，我会从你的知识库中找答案，也可以切换到某个 Skill 获得更有个人视角的回复。</div></div>
+    <div class="chat-ir">
+      <input class="chat-in" id="chat-in" placeholder="问我任何事，或让我基于知识库帮你写作…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"/>
+      <button class="chat-send" onclick="sendChat()"><svg width="14" height="14" viewBox="0 0 14 14" fill="white"><path d="M1 7l11-6-3 6 3 6z"/></svg></button>
+    </div>
+    <div class="chat-foot">
+      <span style="font-size:11.5px;color:var(--ink3)">基于：</span>
+      <div class="sc-chip on" onclick="this.classList.toggle('on')"><div style="width:6px;height:6px;border-radius:50%;background:#2d5a3d"></div>AI & 产品</div>
+      <div class="sc-chip" onclick="this.classList.toggle('on')"><div style="width:6px;height:6px;border-radius:50%;background:#9a7020"></div>商业思维</div>
+      <div class="sc-chip" onclick="this.classList.toggle('on')">全部知识库</div>
+      <div class="sc-chip" onclick="openAgentChat()">⚡ Skills</div>
+    </div>
+  </div>
+  <div class="home-cols">
+    <div>
+      <div class="sec" style="margin-bottom:10px">我的知识领域</div>
+      <div class="h-dom-row" onclick="enterDomain('ai',document.getElementById('sd-ai'))"><div class="h-dom-ico" style="background:#e8f2eb">🤖</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">AI & 产品</div><div style="font-size:11px;color:var(--ink3)">Prompt工程 · Agent设计</div></div><div style="margin-left:auto;font-size:11px;color:var(--ink3)">23 条</div></div>
+      <div class="h-dom-row" onclick="enterDomain('biz',document.getElementById('sd-biz'))"><div class="h-dom-ico" style="background:#f5f0e0">💡</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">商业思维</div><div style="font-size:11px;color:var(--ink3)">增长 · 定价 · 商业模式</div></div><div style="margin-left:auto;font-size:11px;color:var(--ink3)">11 条</div></div>
+      <div class="h-dom-row" onclick="enterDomain('design',document.getElementById('sd-design'))"><div class="h-dom-ico" style="background:#f0eaf8">🎨</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">设计</div><div style="font-size:11px;color:var(--ink3)">UI设计 · 用户体验</div></div><div style="margin-left:auto;font-size:11px;color:var(--ink3)">8 条</div></div>
+      <div class="h-dom-row" onclick="enterDomain('cog',document.getElementById('sd-cog'))"><div class="h-dom-ico" style="background:#e6eef5">🧠</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">认知与学习</div><div style="font-size:11px;color:var(--ink3)">费曼学习 · 记忆</div></div><div style="margin-left:auto;font-size:11px;color:var(--ink3)">5 条</div></div>
+      <div class="sec" style="margin-top:18px;margin-bottom:10px">我的 Skills</div>
+      <div class="h-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:14px">⚡</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink)">AI 产品顾问</div><div style="font-size:10.5px;color:var(--ink3)">AI & 产品 · 23条</div></div></div><button class="btn bp bs" onclick="openAgentChat()">▶ 对话</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:var(--gdl);display:flex;align-items:center;justify-content:center;font-size:14px">⚡</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink)">增长策略助手</div><div style="font-size:10.5px;color:var(--ink3)">商业思维 · 11条</div></div></div><button class="btn bp bs" onclick="T('进入对话：增长策略助手')">▶ 对话</button></div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="sec" style="margin-bottom:0">最近收录</div><div style="font-size:11.5px;color:var(--ac2);cursor:pointer" onclick="V('contents')">查看全部 →</div></div>
+      <div class="h-card" style="margin-bottom:14px">
+        <div class="h-rec" onclick="openItemById(1)"><div class="h-rec-ico">📰</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">为什么大多数 AI Agent 都失败了</div><div style="font-size:10.5px;color:var(--ink3)">AI & 产品 · 3小时前</div><div style="font-size:10px;color:var(--gd2);margin-top:1px">🎤 有我的想法</div></div></div>
+        <div class="h-rec" onclick="openItemById(2)"><div class="h-rec-ico">🔗</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">Notion AI vs Claude：知识库场景对比</div><div style="font-size:10.5px;color:var(--ink3)">AI & 产品 · 昨天</div></div></div>
+        <div class="h-rec" onclick="openItemById(7)"><div class="h-rec-ico">📰</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">定价策略框架：价值定价 vs 成本定价</div><div style="font-size:10.5px;color:var(--ink3)">商业思维 · 昨天 <span style="color:var(--rs)">📡 追踪</span></div></div></div>
+        <div class="h-rec" onclick="openItemById(3)" style="border-bottom:none"><div class="h-rec-ico">📸</div><div><div style="font-size:12.5px;font-weight:500;color:var(--ink);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">【截图】Prompt CoT 三种方式对比图</div><div style="font-size:10.5px;color:var(--ink3)">AI & 产品 · 2天前</div></div></div>
+      </div>
+      <div class="sec" style="margin-bottom:8px">本周动态</div>
+      <div class="h-card">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+          <div><div style="font-size:22px;font-weight:500;color:var(--ac);letter-spacing:-.02em">+8</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">新增内容</div></div>
+          <div><div style="font-size:22px;font-weight:500;color:var(--gd2);letter-spacing:-.02em">5</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">加了想法</div></div>
+          <div><div style="font-size:22px;font-weight:500;color:var(--rs);letter-spacing:-.02em">3</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">追踪待入库</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- LIBRARY -->
+<div class="view hidden" id="view-library">
+<div class="pg">
+  <div class="pg-hdr">
+    <div><div class="pg-title">我的知识库</div><div class="pg-sub">4 个领域 · 47 条内容 · 2 个 Skills</div></div>
+    <div style="display:flex;gap:8px"><button class="btn bp" onclick="openDomainModal()">+ 新建领域</button><button class="btn bo" onclick="openSkillModal()">⚡ 创建 Skill</button><button class="btn bo" onclick="openAddModal()">↑ 添加内容</button></div>
+  </div>
+  <div class="lib-grid">
+    <div class="d-card" onclick="enterDomain('ai',document.getElementById('sd-ai'))"><div class="d-card-in"><div class="d-card-top"><div class="d-ico" style="background:#e8f2eb">🤖</div><div class="d-menu" onclick="event.stopPropagation();T('设置')">⋯</div></div><div class="d-name">AI & 产品</div><div class="d-desc">AI 工具、产品方法论、Agent 设计思路与个人实践</div><div class="d-tags"><span class="d-tag">Prompt工程</span><span class="d-tag">产品设计</span><span class="d-tag">LLM应用</span></div><div class="d-ft"><div class="d-ct"><strong>23</strong> 条 · 3小时前</div><div class="d-sk has">⚡ 有 Skill</div></div></div></div>
+    <div class="d-card" onclick="enterDomain('biz',document.getElementById('sd-biz'))"><div class="d-card-in"><div class="d-card-top"><div class="d-ico" style="background:#f5f0e0">💡</div><div class="d-menu" onclick="event.stopPropagation();T('设置')">⋯</div></div><div class="d-name">商业思维</div><div class="d-desc">商业模式、增长策略、定价框架与市场分析</div><div class="d-tags"><span class="d-tag">增长</span><span class="d-tag">商业模式</span><span class="d-tag">定价</span></div><div class="d-ft"><div class="d-ct"><strong>11</strong> 条 · 昨天</div><div class="d-sk none">+ 创建 Skill</div></div></div></div>
+    <div class="d-card" onclick="enterDomain('design',document.getElementById('sd-design'))"><div class="d-card-in"><div class="d-card-top"><div class="d-ico" style="background:#f0eaf8">🎨</div><div class="d-menu" onclick="event.stopPropagation();T('设置')">⋯</div></div><div class="d-name">设计</div><div class="d-desc">UI/UX 方法论、视觉系统、设计原则</div><div class="d-tags"><span class="d-tag">UI设计</span><span class="d-tag">用户体验</span></div><div class="d-ft"><div class="d-ct"><strong>8</strong> 条 · 3天前</div><div class="d-sk none">+ 创建 Skill</div></div></div></div>
+    <div class="d-card" onclick="enterDomain('cog',document.getElementById('sd-cog'))"><div class="d-card-in"><div class="d-card-top"><div class="d-ico" style="background:#e6eef5">🧠</div><div class="d-menu" onclick="event.stopPropagation();T('设置')">⋯</div></div><div class="d-name">认知与学习</div><div class="d-desc">学习方法、记忆科学、费曼技巧</div><div class="d-tags"><span class="d-tag">费曼学习</span><span class="d-tag">记忆</span></div><div class="d-ft"><div class="d-ct"><strong>5</strong> 条 · 上周</div><div class="d-sk none">+ 创建 Skill</div></div></div></div>
+    <div class="d-new" onclick="openDomainModal()"><div class="d-new-ico">+</div><div class="d-new-txt">新建知识领域</div></div>
+  </div>
+</div>
+</div>
+
+<!-- DOMAIN DETAIL -->
+<div class="view hidden" id="view-domain">
+<div class="pg">
+  <div class="dv-back" onclick="V('library')">← 返回知识库</div>
+  <div class="dv-hdr">
+    <div style="display:flex;align-items:center;gap:12px"><div class="dv-ico" id="dv-ico" style="background:#e8f2eb">🤖</div><div><div class="dv-name" id="dv-name">AI & 产品</div><div class="dv-meta" id="dv-meta">23 条内容 · 最近更新 3 小时前</div></div></div>
+    <div style="display:flex;gap:8px"><button class="btn bo" onclick="openSkillModal()">⚡ 创建 Skill</button><button class="btn bp" onclick="openAddModal()">+ 添加内容</button></div>
+  </div>
+  <div class="dv-stats">
+    <div class="dv-stat hl"><div class="dv-stat-n" id="dv-total">23</div><div class="dv-stat-l">总收录内容</div></div>
+    <div class="dv-stat"><div class="dv-stat-n" id="dv-thoughts">8</div><div class="dv-stat-l">有我的想法</div></div>
+    <div class="dv-stat"><div class="dv-stat-n" id="dv-topics">4</div><div class="dv-stat-l">细分主题</div></div>
+    <div class="dv-stat"><div class="dv-stat-n" id="dv-weekly">本周 +5</div><div class="dv-stat-l">新增内容</div></div>
+  </div>
+  <div class="sec">细分主题</div>
+  <div class="row" style="margin-bottom:18px" id="dv-chips">
+    <div class="chip on" onclick="filterChip(this,'all')">全部 <span style="opacity:.65">23</span></div>
+    <div class="chip" onclick="filterChip(this,'prompt')">Prompt 工程 <span style="opacity:.65">9</span></div>
+    <div class="chip" onclick="filterChip(this,'product')">产品方法论 <span style="opacity:.65">7</span></div>
+    <div class="chip" onclick="filterChip(this,'llm')">LLM 应用 <span style="opacity:.65">5</span></div>
+    <div class="chip" onclick="filterChip(this,'agent')">Agent 设计 <span style="opacity:.65">2</span></div>
+    <div class="chip ai" onclick="T('AI 建议：RAG 相关内容可独立成组（4条）')">✦ AI 发现新聚类</div>
+  </div>
+  <div class="sec">内容列表</div>
+  <div id="dv-list"></div>
+</div>
+</div>
+
+<!-- CONTENT DETAIL -->
+<div class="view hidden" id="view-content" style="background:var(--w)">
+  <div class="cv-bar">
+    <div class="cv-back" onclick="V('domain')">← 返回领域</div>
+    <div style="display:flex;gap:7px"><button class="btn bo bs" onclick="T('分享链接已复制')">🔗 分享</button><button class="btn bo bs" onclick="T('已加入今日复习')">📌 复习</button><button class="btn bp bs" onclick="T('正在以此内容为上下文询问 AI…')">✦ 问 AI</button></div>
+  </div>
+  <div class="cv-body">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:10.5px;padding:3px 10px;border-radius:10px;background:var(--p2);color:var(--ink2)">📰 浏览器插件</span>
+      <span style="font-size:10.5px;padding:3px 10px;border-radius:10px;background:var(--p2);color:var(--ink2)" id="cv-time">3小时前</span>
+      <a style="font-size:11px;color:var(--ac2);text-decoration:none" href="#" onclick="T('跳转原始链接');return false">↗ 原文链接</a>
+    </div>
+    <div style="font-family:'Instrument Serif',serif;font-size:26px;color:var(--ink);letter-spacing:-.02em;line-height:1.3;margin-bottom:11px" id="cv-title">为什么大多数 AI Agent 都失败了——产品视角的反思</div>
+    <div class="row" style="margin-bottom:22px" id="cv-tags">
+      <span class="chip" onclick="T('筛选：Agent设计')">Agent设计</span>
+      <span class="chip" onclick="T('筛选：产品思维')">产品思维</span>
+      <span class="chip">用户期望</span>
+    </div>
+    <div class="cv-tabs">
+      <div class="cv-tab on" onclick="cvTab(this,'ct-md')">内容摘要</div>
+      <div class="cv-tab" onclick="cvTab(this,'ct-th')">我的想法 <span class="cv-tab-dot"></span></div>
+      <div class="cv-tab" onclick="cvTab(this,'ct-rel')">相关内容</div>
+      <div class="cv-tab" onclick="cvTab(this,'ct-sk')">Skills</div>
+    </div>
+    <div class="cv-pane on" id="ct-md">
+      <div class="md">
+        <h2>核心论点</h2>
+        <p>大多数 AI Agent 失败的根本原因不在技术，而在于<span class="md-hl">任务边界定义模糊</span>。用户无法判断 Agent 能力范围时，期望管理失败，信任崩溃。</p>
+        <blockquote>好的 Agent 产品应"先减法，再加法"——从极其清晰的单一场景出发，把这件事做到让用户觉得"它真的懂我"。</blockquote>
+        <h3>三种典型失败模式</h3>
+        <ul><li><strong>过度承诺</strong>：宣传"无所不能"，实际使用落差巨大</li><li><strong>反馈缺失</strong>：执行过程黑盒，用户不知道 Agent 在做什么</li><li><strong>错误无法恢复</strong>：出错后无法纠正，用户只能重头开始</li></ul>
+        <div class="md-hr"></div>
+        <h2>设计建议</h2>
+        <ul><li>UI 层主动展示 Agent 能做什么、不能做什么</li><li>可视化中间步骤（Progress 而非只是 Thinking…）</li><li>设计"回退点"——允许用户在任意步骤介入修正</li></ul>
+        <a class="md-src" href="#" onclick="T('跳转原始文章');return false">↗ 查看原始文章</a>
+      </div>
+    </div>
+    <div class="cv-pane" id="ct-th">
+      <div class="th-card"><div class="th-hdr"><div class="th-meta">🎤 语音记录 · 2小时前</div><div class="th-edit" onclick="openTA(this)">编辑</div></div><div class="th-txt">跟我做知识库产品的判断完全吻合——先解决一个核心痛点，别想着大而全。Agent 的边界问题和知识库的采集问题，本质上都是"范围感知"问题。</div></div>
+      <div class="th-card"><div class="th-hdr"><div class="th-meta">✏️ 文字记录 · 昨天</div><div class="th-edit" onclick="openTA(this)">编辑</div></div><div class="th-txt">"回退点"设计可借鉴 Git commit 概念，每个关键决策存快照，失败了可 rollback 到任意节点。这是 Agent UX 里最被忽视的部分。</div></div>
+      <div class="th-add"><button class="th-btn th-v" id="voiceBtn" onclick="toggleVoice()">🎤 录制语音想法</button><button class="th-btn th-t" onclick="openTA(null)">✏️ 文字输入</button></div>
+    </div>
+    <div class="cv-pane" id="ct-rel">
+      <p style="font-size:12px;color:var(--ink3);margin-bottom:12px">AI 基于语义相似度推荐：</p>
+      <div class="ci" onclick="T('打开：Notion AI vs Claude 对比')"><div class="ci-main"><div class="ci-src">🔗</div><div class="ci-body"><div class="ci-r1"><div class="ci-title">Notion AI vs Claude：知识库场景深度对比</div><div class="ci-sl">链接解析 · 昨天</div></div><div class="ci-ft"><span style="font-size:10.5px;color:var(--ac2);font-weight:500">87% 相关</span></div></div></div></div>
+      <div class="ci" onclick="T('打开：RAG 检索架构实践')"><div class="ci-main"><div class="ci-src">📰</div><div class="ci-body"><div class="ci-r1"><div class="ci-title">RAG 检索增强生成：从理论到产品化实践</div><div class="ci-sl">文章 · 3天前</div></div><div class="ci-ft"><span style="font-size:10.5px;color:var(--ac2);font-weight:500">74% 相关</span></div></div></div></div>
+    </div>
+    <div class="cv-pane" id="ct-sk">
+      <div style="border:1.5px dashed var(--acm);border-radius:var(--r12);padding:22px;text-align:center;margin-bottom:14px;cursor:pointer;transition:all .2s" onclick="openSkillModal()" onmouseover="this.style.background='var(--acl)'" onmouseout="this.style.background=''">
+        <div style="font-size:26px;margin-bottom:8px">⚡</div>
+        <div style="font-size:14px;font-weight:500;color:var(--ac);margin-bottom:4px">基于「AI & 产品」创建 Skill</div>
+        <div style="font-size:12px;color:var(--ink3)">封装成可对话的 AI Agent，代表你的视角</div>
+      </div>
+      <div style="background:var(--paper);border:1px solid var(--p3);border-radius:var(--r12);padding:16px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="font-size:14px;font-weight:500;color:var(--ink)">⚡ AI 产品顾问</span><span class="sk-pub">已发布</span></div><div style="font-size:12.5px;color:var(--ink3);margin-bottom:12px;line-height:1.6">基于 AI & 产品领域 23 条知识，融合个人批注观点。</div><div style="display:flex;gap:7px"><button class="btn bp bs" onclick="openAgentChat()">▶ 开始对话</button><button class="btn bo bs" onclick="openSkillModal()">编辑</button><button class="btn bo bs" onclick="T('分享链接已复制')">分享</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ALL CONTENTS -->
+<div class="view hidden" id="view-contents">
+<div class="pg">
+  <div class="pg-hdr"><div><div class="pg-title">所有内容</div><div class="pg-sub">47 条 · 跨 4 个知识领域</div></div><button class="btn bp" onclick="openAddModal()">+ 添加内容</button></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+    <div class="search-wrap" style="width:240px"><span class="search-ico">🔍</span><input class="search-in" placeholder="搜索标题、摘要、标签…" oninput="filterContents(this.value)"/></div>
+    <button class="btn bo bs" onclick="T('按时间排序')">↓ 时间</button>
+  </div>
+  <div class="row" style="margin-bottom:7px">
+    <div class="chip on" onclick="setContF(this,'all')">全部 <span style="opacity:.6">47</span></div>
+    <div class="chip" onclick="setContF(this,'article')">📰 文章</div>
+    <div class="chip" onclick="setContF(this,'link')">🔗 链接</div>
+    <div class="chip" onclick="setContF(this,'screenshot')">📸 截图</div>
+    <div class="chip" onclick="setContF(this,'note')">📝 笔记</div>
+    <div class="chip" onclick="setContF(this,'thought')">🎤 有想法</div>
+    <div class="chip" style="border-color:#d4a0a0;color:var(--rs)" onclick="setContF(this,'track')">📡 追踪收录</div>
+  </div>
+  <div class="row" style="margin-bottom:14px">
+    <div class="chip" onclick="setDomF(this,'ai')"><div style="width:6px;height:6px;border-radius:50%;background:#2d5a3d"></div>AI & 产品</div>
+    <div class="chip" onclick="setDomF(this,'biz')"><div style="width:6px;height:6px;border-radius:50%;background:#9a7020"></div>商业思维</div>
+    <div class="chip" onclick="setDomF(this,'design')"><div style="width:6px;height:6px;border-radius:50%;background:#5a3d8a"></div>设计</div>
+    <div class="chip" onclick="setDomF(this,'cog')"><div style="width:6px;height:6px;border-radius:50%;background:#3d6a8a"></div>认知与学习</div>
+  </div>
+  <div style="font-size:12px;color:var(--ink3);margin-bottom:12px" id="cont-count">显示 11 条内容</div>
+  <div id="cont-list"></div>
+</div>
+</div>
+
+<!-- SKILLS -->
+<div class="view hidden" id="view-skills">
+<div class="pg">
+  <div class="pg-hdr"><div><div class="pg-title">Skills</div><div class="pg-sub">我创建的 · 从社区保存的</div></div><button class="btn bp" onclick="openSkillModal()">+ 创建 Skill</button></div>
+  <div class="sk-tabs">
+    <div class="sk-tab on" onclick="skTab(this,'sk-my')">我创建的 <span style="font-size:10.5px;color:var(--ink4);font-weight:400">2</span></div>
+    <div class="sk-tab" onclick="skTab(this,'sk-saved')">从社区保存 <span style="font-size:10.5px;color:var(--ink4);font-weight:400">1</span></div>
+  </div>
+  <div class="sk-pane on" id="sk-my">
+    <div class="sk-grid">
+      <div class="sk-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:9px"><div class="sk-card-ico" style="background:var(--acl)">⚡</div><div><div style="font-size:14px;font-weight:500;color:var(--ink)">AI 产品顾问</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">AI & 产品 · 23条 · 8条想法</div></div></div><span class="sk-pub">已发布</span></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px">基于我的 AI 产品积累，优先引用个人批注，体现我在 Agent 设计和 Prompt 工程上的实践判断。</div><div class="row" style="margin-bottom:12px"><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">Prompt工程</span><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">Agent设计</span></div><div style="display:flex;gap:7px"><button class="btn bp bs" style="flex:1;justify-content:center" onclick="openAgentChat()">▶ 开始对话</button><button class="btn bo bs" onclick="openSkillModal()">编辑</button><button class="btn bo bs" onclick="T('分享链接已复制')">分享</button></div></div>
+      <div class="sk-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:9px"><div class="sk-card-ico" style="background:var(--gdl)">⚡</div><div><div style="font-size:14px;font-weight:500;color:var(--ink)">增长策略助手</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">商业思维 · 11条 · 4条想法</div></div></div><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:var(--p2);color:var(--ink3)">私有</span></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px">整合我对 PLG、定价策略、增长飞轮的理解，帮我快速分析商业问题。</div><div class="row" style="margin-bottom:12px"><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--gdl);color:var(--gd)">增长</span><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--gdl);color:var(--gd)">定价</span></div><div style="display:flex;gap:7px"><button class="btn bp bs" style="flex:1;justify-content:center" onclick="T('进入对话：增长策略助手')">▶ 开始对话</button><button class="btn bo bs" onclick="openSkillModal()">编辑</button><button class="btn bo bs" onclick="T('已发布到社区广场')">发布</button></div></div>
+    </div>
+    <div style="background:var(--w);border:1px solid var(--p3);border-radius:var(--r12);padding:14px;display:flex;align-items:center;gap:12px;margin-top:8px"><div style="width:34px;height:34px;border-radius:9px;background:#f0eaf8;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🎨</div><div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px">设计思维助手</div><div style="font-size:11.5px;color:var(--ink3)">你在「设计」领域已积累 8 条内容（含 2 条个人想法），AI 建议基于此创建 Skill</div></div><button class="btn bo bs" style="white-space:nowrap" onclick="openSkillModal()">一键创建</button></div>
+  </div>
+  <div class="sk-pane" id="sk-saved">
+    <div class="sk-grid">
+      <div class="sk-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:9px"><div class="sk-card-ico" style="background:#e8f2eb">📈</div><div><div style="font-size:14px;font-weight:500;color:var(--ink)">产品增长顾问</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">by @liuyang · AI产品 · 用了 238次</div></div></div><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:var(--p2);color:var(--ink3)">已保存</span></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px">整合 PLG 方法论与 SaaS 增长案例，帮你分析产品增长问题。</div><div class="row" style="margin-bottom:12px"><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">PLG</span><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">增长</span></div><div style="display:flex;gap:7px"><button class="btn bp bs" style="flex:1;justify-content:center" onclick="T('进入对话：产品增长顾问')">▶ 开始对话</button><button class="btn bo bs" onclick="T('已从列表移除')">移除</button></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TRACKING (news feed style) -->
+<div class="view hidden" id="view-tracking">
+<div class="pg">
+  <div class="pg-hdr">
+    <div><div class="pg-title">知识追踪</div><div class="pg-sub">每日推送你关注领域的精选内容，确认后一键入库</div></div>
+    <div style="display:flex;gap:8px"><button class="btn bo" onclick="openTrackModal()">⚙ 设置</button><button class="btn bp" onclick="T('刷新追踪，获取最新内容')">↻ 刷新</button></div>
+  </div>
+
+  <!-- Tracking keywords display -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+    <span style="font-size:11.5px;color:var(--ink3);align-self:center">追踪中：</span>
+    <span class="chip on" style="font-size:11px">AI Agent 产品设计</span>
+    <span class="chip on" style="font-size:11px">SaaS增长 PLG</span>
+    <span class="chip on" style="font-size:11px">UI设计趋势</span>
+    <span class="chip" style="font-size:11px;border-style:dashed" onclick="openTrackModal()">+ 添加</span>
+  </div>
+
+  <!-- Today feed -->
+  <div class="track-day-header"><div class="track-day-line"></div><div class="track-day-label">今天 · 3 条新内容</div><div class="track-day-line"></div></div>
+
+  <div class="track-item">
+    <div class="track-item-main">
+      <div class="track-item-ico">📰</div>
+      <div class="track-item-body">
+        <div class="track-item-title">OpenAI 发布 GPT-5：对 Agent 产品设计的三个影响</div>
+        <div class="track-item-sum">GPT-5 的多模态推理能力将改变 Agent 任务分解方式，产品层面需要重新考虑任务边界的划定，以及如何向用户展示 Agent 的能力范围……</div>
+        <div class="track-item-meta">
+          <span class="track-src-badge">36kr.com</span>
+          <span class="track-kw-badge">AI Agent 产品设计</span>
+          <span class="track-rel">95% 相关</span>
+          <span class="track-saved">2025-03-22</span>
+        </div>
+      </div>
+    </div>
+    <div class="track-item-foot">
+      <div class="track-expand" id="texp-1" onclick="toggleTrackDetail(1)">▸ 展开摘要</div>
+      <button class="track-inbox-btn" id="tinbox-1" onclick="trackInbox(1)">+ 入库</button>
+    </div>
+    <div class="track-detail" id="tdet-1">
+      <strong>主要观点：</strong><br>
+      1. GPT-5 的上下文窗口扩大到 200K，Agent 可以一次处理更复杂的任务链<br>
+      2. 多模态理解让 Agent 能直接处理截图、PDF，不需要 OCR 中间层<br>
+      3. 产品层面影响：任务边界需要重新定义，从"单步指令"升级为"意图理解"<br><br>
+      <strong>对我的启发：</strong> 这印证了"先做一件事极致"的判断，但同时说明能力边界会快速扩张，产品架构要留好扩展空间。
+    </div>
+  </div>
+
+  <div class="track-item">
+    <div class="track-item-main">
+      <div class="track-item-ico">📰</div>
+      <div class="track-item-body">
+        <div class="track-item-title">2026 年 SaaS 定价趋势：用量定价 vs 席位定价的分水岭</div>
+        <div class="track-item-sum">越来越多的 B2B SaaS 从席位定价转向用量定价，核心驱动是 AI 功能的普及使得"每个席位的价值"差异显著……</div>
+        <div class="track-item-meta">
+          <span class="track-src-badge">少数派</span>
+          <span class="track-kw-badge">SaaS增长 PLG</span>
+          <span class="track-rel">88% 相关</span>
+          <span class="track-saved">2025-03-22</span>
+        </div>
+      </div>
+    </div>
+    <div class="track-item-foot">
+      <div class="track-expand" id="texp-2" onclick="toggleTrackDetail(2)">▸ 展开摘要</div>
+      <button class="track-inbox-btn" id="tinbox-2" onclick="trackInbox(2)">+ 入库</button>
+    </div>
+    <div class="track-detail" id="tdet-2">
+      <strong>主要观点：</strong><br>
+      用量定价的核心在于"让用户感受到价值与付费的直接对应"，适合 AI 驱动的产品。席位定价更适合协作场景。<br><br>
+      文章给出了三个评估框架：1) 用户使用频率差异大 → 用量定价；2) 协作是核心价值 → 席位定价；3) 有明确输出指标 → 成果定价。
+    </div>
+  </div>
+
+  <div class="track-item">
+    <div class="track-item-main">
+      <div class="track-item-ico">📰</div>
+      <div class="track-item-body">
+        <div class="track-item-title">Figma Config 2026：AI 辅助设计的边界在哪里</div>
+        <div class="track-item-sum">Figma 展示了新的 AI 功能，能够根据简单描述生成完整的 UI 组件，但设计师的反应喜忧参半……</div>
+        <div class="track-item-meta">
+          <span class="track-src-badge">微信公众号</span>
+          <span class="track-kw-badge">UI设计趋势</span>
+          <span class="track-rel">82% 相关</span>
+          <span class="track-saved">2025-03-22</span>
+        </div>
+      </div>
+    </div>
+    <div class="track-item-foot">
+      <div class="track-expand" id="texp-3" onclick="toggleTrackDetail(3)">▸ 展开摘要</div>
+      <button class="track-inbox-btn" id="tinbox-3" onclick="trackInbox(3)">+ 入库</button>
+    </div>
+    <div class="track-detail" id="tdet-3">Figma AI 的核心能力：1) 组件智能推荐；2) 布局自动优化；3) 变量一键生成。设计师担忧：工具在降低门槛的同时也在降低作品的差异性，"人人都能做出 OK 的设计"可能意味着"设计不再稀缺"。</div>
+  </div>
+
+  <!-- Yesterday feed -->
+  <div class="track-day-header"><div class="track-day-line"></div><div class="track-day-label">昨天 · 2 条已入库</div><div class="track-day-line"></div></div>
+
+  <div class="track-item" style="opacity:.7">
+    <div class="track-item-main"><div class="track-item-ico">📰</div><div class="track-item-body"><div class="track-item-title">定价策略框架：价值定价 vs 成本定价</div><div class="track-item-meta"><span class="track-src-badge">36kr.com</span><span class="track-kw-badge">SaaS增长 PLG</span><span style="font-size:10px;color:var(--ac2);font-weight:500">✓ 已入库</span></div></div></div>
+  </div>
+  <div class="track-item" style="opacity:.7">
+    <div class="track-item-main"><div class="track-item-ico">📰</div><div class="track-item-body"><div class="track-item-title">SaaS 增长飞轮：PLG 与 SLG 的协同</div><div class="track-item-meta"><span class="track-src-badge">少数派</span><span class="track-kw-badge">SaaS增长 PLG</span><span style="font-size:10px;color:var(--ac2);font-weight:500">✓ 已入库</span></div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- COMMUNITY -->
+<div class="view hidden" id="view-community">
+<div class="pg">
+  <div class="pg-hdr"><div><div class="pg-title">社区广场</div><div class="pg-sub">发现并使用他人封装的 Skills · 你的 Skill 被使用后你也能获益</div></div><button class="btn bp" onclick="T('发布我的 Skill 到广场')">+ 发布 Skill</button></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+    <div class="search-wrap" style="width:240px"><span class="search-ico">🔍</span><input class="search-in" placeholder="搜索 Skill 名称或领域…"/></div>
+  </div>
+  <div class="row" style="margin-bottom:18px">
+    <div class="chip on" onclick="setCommF(this,'all')">全部</div>
+    <div class="chip" onclick="setCommF(this,'ai')">🤖 AI产品</div>
+    <div class="chip" onclick="setCommF(this,'biz')">💡 商业</div>
+    <div class="chip" onclick="setCommF(this,'design')">🎨 设计</div>
+    <div class="chip" onclick="setCommF(this,'learn')">🧠 学习</div>
+    <div class="chip" onclick="setCommF(this,'write')">✍️ 写作</div>
+  </div>
+  <div class="sec">热门 Skills</div>
+  <div class="comm-grid">
+    <div class="comm-card" onclick="T('使用 Skill：产品增长顾问')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:#e8f2eb">📈</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">产品增长顾问</div><div style="font-size:10.5px;color:var(--ink3)">by @liuyang · AI产品</div></div></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">整合 PLG 方法论与 SaaS 增长案例，帮你分析产品增长问题。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat">▶ 238次</span><span class="comm-stat">⭐ 4.8</span></div><button class="btn bp bs" onclick="event.stopPropagation();T('已保存到我的 Skills')">保存使用</button></div></div>
+    <div class="comm-card" onclick="T('使用 Skill：设计决策助手')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:#f0eaf8">🎨</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">设计决策助手</div><div style="font-size:10.5px;color:var(--ink3)">by @chenxi · 设计</div></div></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">基于 UX 原则和认知科学，帮你快速评估界面设计方案。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat">▶ 156次</span><span class="comm-stat">⭐ 4.7</span></div><button class="btn bp bs" onclick="event.stopPropagation();T('已保存到我的 Skills')">保存使用</button></div></div>
+    <div class="comm-card" onclick="T('使用 Skill：费曼学习伙伴')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:#e6eef5">🧠</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">费曼学习伙伴</div><div style="font-size:10.5px;color:var(--ink3)">by @zhaomin · 学习</div></div></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">用苏格拉底式追问检验理解深度，卡壳时给提示而不直接给答案。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat">▶ 71次</span><span class="comm-stat">⭐ 4.9</span></div><button class="btn bp bs" onclick="event.stopPropagation();T('已保存到我的 Skills')">保存使用</button></div></div>
+    <div class="comm-card" style="border-color:var(--acm);background:var(--acl)" onclick="T('查看你的 Skill 使用数据')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:var(--w)">⚡</div><div><div style="font-size:13px;font-weight:500;color:var(--ac)">AI 产品顾问</div><div style="font-size:10.5px;color:var(--ac2)">by 你 · 已发布</div></div></div><div style="font-size:12px;color:var(--ac2);line-height:1.6;margin-bottom:10px">这是你发布的 Skill！被使用 12 次，获得 12 贡献值。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat" style="color:var(--ac2)">▶ 12次</span><span class="comm-stat" style="color:var(--gd2)">+12 贡献值</span></div><button class="btn bo bs" onclick="event.stopPropagation();T('查看数据详情')">数据</button></div></div>
+    <div class="comm-card" onclick="T('使用 Skill：投资研究助手')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:#f5f0e0">💰</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">投资研究助手</div><div style="font-size:10.5px;color:var(--ink3)">by @wangfei · 商业</div></div></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">整合行业报告与财务分析框架，帮你梳理投资逻辑和风险点。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat">▶ 94次</span><span class="comm-stat">⭐ 4.6</span></div><button class="btn bp bs" onclick="event.stopPropagation();T('已保存到我的 Skills')">保存使用</button></div></div>
+    <div class="comm-card" onclick="T('使用 Skill：写作风格顾问')"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><div class="comm-ico" style="background:#f5f0e0">✍️</div><div><div style="font-size:13px;font-weight:500;color:var(--ink)">写作风格顾问</div><div style="font-size:10.5px;color:var(--ink3)">by @sunna · 写作</div></div></div><div style="font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">帮你打磨文章结构和语言风格，保留你自己的声音。</div><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:9px"><span class="comm-stat">▶ 53次</span><span class="comm-stat">⭐ 4.5</span></div><button class="btn bp bs" onclick="event.stopPropagation();T('已保存到我的 Skills')">保存使用</button></div></div>
+  </div>
+</div>
+</div>
+
+<!-- AGENT CHAT -->
+<div class="view hidden" id="view-agent" style="background:var(--w)">
+  <div class="agent-wrap">
+    <div class="agent-bar">
+      <div class="cv-back" onclick="V('skills')" style="padding:4px 8px">←</div>
+      <div class="agent-bar-ico">⚡</div>
+      <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;color:var(--ink)">AI 产品顾问</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">AI & 产品 · 23条内容 · 8条个人想法 · 优先体现你的视角</div></div>
+      <div class="row" style="flex-shrink:0"><span class="chip on bs" style="font-size:10.5px">Prompt工程</span><span class="chip on bs" style="font-size:10.5px">Agent设计</span></div>
+      <button class="btn bo bs" style="margin-left:8px" onclick="V('pricing')">🔒 升级 Pro</button>
+    </div>
+    <div class="agent-msgs" id="agent-msgs">
+      <div class="ag-ai"><div class="ag-bubble">你好！我是你的 <strong>AI 产品顾问</strong>，基于你在 AI & 产品领域的 23 条知识积累和 8 条个人想法生成。<br><br>我回答时会优先引用你自己的观点和批注，你存的内容是我的核心知识库。有什么想聊的？</div></div>
+    </div>
+    <div class="agent-in-area">
+      <div class="agent-in-box">
+        <textarea class="ag-in" id="agent-in" rows="1" placeholder="问任何事，我会从你的知识库中找答案…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAgent()}" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button class="ag-send" onclick="sendAgent()"><svg width="14" height="14" viewBox="0 0 14 14" fill="white"><path d="M1 7l11-6-3 6 3 6z"/></svg></button>
+      </div>
+      <div style="font-size:11px;color:var(--ink4);margin-top:6px;text-align:center;max-width:780px;margin-left:auto;margin-right:auto">回答会标注来源 · 可一键保存回答到知识库</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="view hidden" id="view-pricing">
+<div class="pg">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="font-family:'Instrument Serif',serif;font-size:30px;color:var(--ink);letter-spacing:-.02em;margin-bottom:8px">选择适合你的方案</div>
+    <div style="font-size:14px;color:var(--ink3)">知识越积累，价值越大。升级 Pro 解锁 AI 全力驱动的知识引擎。</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px">
+      <span style="font-size:13px;color:var(--ink2)">月付</span>
+      <div id="billing-toggle" style="width:44px;height:24px;border-radius:12px;background:var(--ac);cursor:pointer;position:relative;transition:background .2s" onclick="toggleBilling()"><div id="billing-knob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:transform .2s"></div></div>
+      <span style="font-size:13px;color:var(--ink2)">年付</span>
+      <span style="font-size:11px;background:var(--acl);color:var(--ac);padding:2px 8px;border-radius:10px;font-weight:500">省 20%</span>
+    </div>
+  </div>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-name">免费版</div>
+      <div class="price-amt">¥0 <span>/ 月</span></div>
+      <div class="price-desc">适合刚开始构建个人知识库的用户</div>
+      <button class="btn bo" style="width:100%;justify-content:center;margin-bottom:18px" onclick="T('当前方案')">当前方案</button>
+      <div class="price-feat">3 个知识领域</div>
+      <div class="price-feat">50 条内容上限</div>
+      <div class="price-feat">基础 AI 摘要与分类</div>
+      <div class="price-feat">1 个 Skill 创建</div>
+      <div class="price-feat dim">知识追踪</div>
+      <div class="price-feat dim">无限内容</div>
+      <div class="price-feat dim">Skill 发布到社区</div>
+      <div class="price-feat dim">AI 深度对话（每月 50 次）</div>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">最受欢迎</div>
+      <div class="price-name" style="color:var(--ac)">Pro</div>
+      <div class="price-amt" id="pro-price">¥39 <span>/ 月</span></div>
+      <div class="price-desc">适合有系统知识积累需求的个人用户</div>
+      <button class="btn bp" style="width:100%;justify-content:center;margin-bottom:18px" onclick="T('开始 7 天免费试用')">免费试用 7 天</button>
+      <div class="price-feat">无限知识领域</div>
+      <div class="price-feat">无限内容收录</div>
+      <div class="price-feat">AI 高级摘要 + 深度分类</div>
+      <div class="price-feat">无限 Skill 创建</div>
+      <div class="price-feat">知识追踪（每日推送）</div>
+      <div class="price-feat">Skill 发布到社区</div>
+      <div class="price-feat">AI 深度对话（不限次数）</div>
+      <div class="price-feat dim">团队协作</div>
+      <div class="price-feat dim">API 访问</div>
+    </div>
+    <div class="price-card">
+      <div class="price-name">团队版</div>
+      <div class="price-amt" id="team-price">¥29 <span>/ 人 / 月</span></div>
+      <div class="price-desc">适合团队共建知识库，沉淀组织智慧</div>
+      <button class="btn bo" style="width:100%;justify-content:center;margin-bottom:18px" onclick="T('联系我们：team@kumo.ai')">联系销售</button>
+      <div class="price-feat">Pro 全部功能</div>
+      <div class="price-feat">团队共享知识库</div>
+      <div class="price-feat">团队 Skills 协作</div>
+      <div class="price-feat">权限管理</div>
+      <div class="price-feat">API 访问</div>
+      <div class="price-feat">优先客服支持</div>
+      <div class="price-feat">自定义集成</div>
+    </div>
+  </div>
+  <div style="margin-top:28px;padding:20px;background:var(--w);border-radius:var(--r12);border:1px solid var(--p3)">
+    <div style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:12px">🎁 社区贡献抵扣</div>
+    <div style="font-size:13px;color:var(--ink2);line-height:1.75">你发布到社区的 Skill 每被使用一次，你将获得 <strong>1 贡献值</strong>。累计 <strong>39 贡献值</strong> 可兑换一个月 Pro 会员。这让知识的分享者能够免费使用更多功能。</div>
+    <div style="margin-top:12px;font-size:12.5px;color:var(--ink3)">你当前的贡献值：<strong style="color:var(--ac)">12 / 39</strong> · 还差 27 次被使用即可兑换</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Skill Create Modal (simplified with chat input) -->
+<div class="ov" id="skillModal" onclick="if(event.target===this)closeSkillModal()">
+<div class="modal" style="width:540px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+    <div class="m-title" id="sk-m-title">创建 Skill</div>
+    <div onclick="closeSkillModal()" style="cursor:pointer;font-size:18px;color:var(--ink3);padding:4px 8px;border-radius:6px;line-height:1;transition:background .15s" onmouseover="this.style.background='var(--p2)'" onmouseout="this.style.background=''">×</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="sk-s1">
+    <div class="m-sub">选择知识来源，用对话框描述你想要的 Skill，AI 自动封装</div>
+    <!-- AI banner -->
+    <div style="background:var(--acl);border:1.5px solid var(--acm);border-radius:var(--r8);padding:11px 13px;margin-bottom:16px;display:flex;align-items:flex-start;gap:9px">
+      <span style="font-size:16px;flex-shrink:0">✦</span>
+      <div><div style="font-size:12.5px;font-weight:500;color:var(--ac);margin-bottom:2px">AI 辅助生成</div><div style="font-size:11.5px;color:var(--ac2);line-height:1.6">选好领域和标签后，描述你的需求，AI 会自动读取你的内容与「我的想法」批注，生成完整的 Skill 结构。你只需确认或微调。</div></div>
+    </div>
+    <div class="m-lbl">选择领域知识库</div>
+    <div class="row" style="margin-bottom:14px" id="sk-doms">
+      <div class="m-chip sel" onclick="this.classList.toggle('sel');renderSkTags()">🤖 AI & 产品</div>
+      <div class="m-chip" onclick="this.classList.toggle('sel');renderSkTags()">💡 商业思维</div>
+      <div class="m-chip" onclick="this.classList.toggle('sel');renderSkTags()">🎨 设计</div>
+      <div class="m-chip" onclick="this.classList.toggle('sel');renderSkTags()">🧠 认知与学习</div>
+    </div>
+    <div class="m-lbl">细分标签 <span style="font-weight:400;color:var(--ink3);font-size:11px">（越精准越好）</span></div>
+    <div class="row" style="margin-bottom:14px" id="sk-tags"></div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><div class="m-lbl" style="margin-bottom:0">精选内容 <span style="font-weight:400;color:var(--ink3);font-size:11px">（可选）</span></div><div style="font-size:11px;color:var(--ac2);cursor:pointer" onclick="toggleSkItems()">展开选择 ▸</div></div>
+      <div id="sk-items-wrap" style="display:none;border:1px solid var(--p3);border-radius:var(--r8);overflow:hidden;max-height:160px;overflow-y:auto"><div id="sk-items"></div></div>
+    </div>
+
+    <!-- Chat-style input for description -->
+    <div class="m-lbl">描述你想要的 Skill</div>
+    <div style="border:1px solid var(--p3);border-radius:var(--r12);overflow:hidden;margin-bottom:14px">
+      <div id="sk-chat-msgs" style="padding:10px 12px;min-height:52px;max-height:120px;overflow-y:auto;font-size:12.5px;color:var(--ink2);line-height:1.65">
+        <div style="color:var(--ink4);font-style:italic;font-size:12px">告诉 AI 你希望这个 Skill 如何回答问题，或者它主要用来做什么…</div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:7px;border-top:1px solid var(--p3);padding:8px 10px;background:var(--paper)">
+        <textarea id="sk-chat-in" style="flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:transparent;resize:none;min-height:22px;max-height:80px;line-height:1.5" placeholder="例如：帮我分析 AI 产品设计问题，优先体现我在 Agent 边界上的判断…" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addSkChat()}"></textarea>
+        <button onclick="toggleSkVoice()" id="sk-voice-btn" style="width:30px;height:30px;border-radius:var(--r8);border:1px solid var(--p3);background:var(--w);cursor:pointer;font-size:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s">🎤</button>
+        <button onclick="addSkChat()" style="width:30px;height:30px;border-radius:var(--r8);background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 14 14" fill="white"><path d="M1 7l11-6-3 6 3 6z"/></svg></button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:9px">
+      <div style="flex:1.3"><div class="m-lbl">Skill 名称</div><input class="m-in" id="sk-name" style="margin-bottom:0" value="AI 产品顾问"/></div>
+      <div style="flex:1"><div class="m-lbl">可见性</div><div style="display:flex;gap:5px"><label style="flex:1;border:1px solid var(--p3);border-radius:var(--r8);padding:8px 9px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="vis" value="private" checked style="accent-color:var(--ac)"> 仅自己</label><label style="flex:1;border:1px solid var(--p3);border-radius:var(--r8);padding:8px 9px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="vis" value="public" style="accent-color:var(--ac)"> 发布广场</label></div></div>
+    </div>
+    <div class="m-acts"><button class="mbtn cn" onclick="closeSkillModal()">取消</button><button class="mbtn cf" id="sk-gen-btn" onclick="genSkill()">✦ AI 生成 Skill</button></div>
+  </div>
+
+  <!-- STEP 2: Preview -->
+  <div id="sk-s2" style="display:none">
+    <div class="m-sub">AI 已生成以下 Skill，可直接确认或修改后保存</div>
+    <div style="display:flex;border:1px solid var(--p3);border-radius:var(--r8);overflow:hidden;margin-bottom:14px">
+      <div class="skpt on" id="spt-ov" onclick="skPrev('ov')">概览</div>
+      <div class="skpt" id="spt-kn" onclick="skPrev('kn')">知识内容</div>
+      <div class="skpt" id="spt-pr" onclick="skPrev('pr')">生成指令</div>
+      <div class="skpt" id="spt-ts" onclick="skPrev('ts')">测试对话</div>
+    </div>
+    <div id="spv-ov">
+      <div style="background:var(--p2);border-radius:var(--r8);padding:13px;margin-bottom:12px;display:flex;align-items:center;gap:11px"><div style="width:40px;height:40px;border-radius:11px;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:19px">⚡</div><div style="flex:1"><input id="sk-prev-name" style="font-size:15px;font-weight:500;color:var(--ink);background:transparent;border:none;outline:none;width:100%;margin-bottom:3px" value="AI 产品顾问"/><div style="font-size:11px;color:var(--ink3)">AI & 产品 · 23条内容 · 8条个人想法</div></div></div>
+      <div class="row" style="margin-bottom:11px"><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">Prompt工程</span><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">Agent设计</span><span style="font-size:10.5px;padding:2px 8px;border-radius:8px;background:var(--acl);color:var(--ac)">产品方法论</span></div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.7;background:var(--paper);border-radius:var(--r8);padding:11px">基于你在 AI & 产品领域的积累，<strong>优先引用你的个人批注</strong>（权重×2），回答时体现你的判断逻辑，引用内容时标注来源，超出知识库时坦诚说明。</div>
+    </div>
+    <div id="spv-kn" style="display:none">
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:9px">高亮 = 有个人想法，权重更高。可取消勾选不需要的内容。</div>
+      <div style="border:1px solid var(--p3);border-radius:var(--r8);overflow:hidden;max-height:240px;overflow-y:auto">
+        <div class="sk-item-row" style="background:var(--gdl)"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">为什么大多数 AI Agent 都失败了</div><div class="sk-imeta">浏览器插件 · Agent设计</div><div class="sk-ith">🎤 有我的想法 · 权重 ×2</div></div></div>
+        <div class="sk-item-row"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">Notion AI vs Claude：知识库场景对比</div><div class="sk-imeta">链接解析 · 产品方法论</div></div></div>
+        <div class="sk-item-row" style="background:var(--gdl)"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">【截图】Prompt CoT 对比图</div><div class="sk-imeta">截图OCR · Prompt工程</div><div class="sk-ith">🎤 有我的想法 · 权重 ×2</div></div></div>
+        <div class="sk-item-row"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">RAG 检索增强生成</div><div class="sk-imeta">浏览器插件 · LLM应用</div></div></div>
+        <div class="sk-item-row" style="background:var(--gdl)"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">个人笔记：对话框产品的三个设计原则</div><div class="sk-imeta">手动记录 · 产品方法论</div><div class="sk-ith">🎤 有我的想法 · 权重 ×2</div></div></div>
+      </div>
+    </div>
+    <div id="spv-pr" style="display:none"><textarea class="m-ta" style="min-height:190px;font-size:12px;font-family:monospace;margin-bottom:4px">## 身份
+AI 产品顾问，基于用户在「AI & 产品」的 23 条知识积累。
+
+## 知识优先级
+1. 用户「我的想法」批注 > 原文摘要 > 通用知识
+2. 引用时标注：「来自：[标题]」
+
+## 回答规则
+- 体现用户自己的视角和立场
+- 超出知识库时说明局限性
+- 简洁有观点，不废话</textarea></div>
+    <div id="spv-ts" style="display:none">
+      <div style="border:1px solid var(--p3);border-radius:var(--r8);overflow:hidden;margin-bottom:11px"><div style="padding:9px 13px;background:var(--p2);font-size:12.5px"><strong>你：</strong> 知识库产品应该优先做哪个功能？</div><div style="padding:11px 13px;font-size:12.5px;color:var(--ink2);line-height:1.7"><strong style="color:var(--ac)">AI 产品顾问：</strong> 基于我的判断框架，先做<strong>零摩擦采集</strong>。我自己在「对话框产品的三个设计原则」里记过：先解决一个核心痛点，不要大而全。<div style="font-size:10px;color:var(--ink4);margin-top:5px">引用：AI Agent 失败反思 (想法) · 个人笔记：对话框三原则 (想法)</div></div></div>
+      <div style="display:flex;gap:7px"><input style="flex:1;padding:8px 11px;border:1px solid var(--p3);border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="输入测试问题…" onkeydown="if(event.key==='Enter')T('测试回答生成中…')"/><button class="btn bp bs" onclick="T('测试回答生成中…')">发送</button></div>
+    </div>
+    <div class="m-acts"><button class="mbtn cn" onclick="backSkill()">← 修改</button><button class="mbtn cf" onclick="saveSkill()">✓ 保存 Skill</button></div>
+  </div>
+</div>
+</div>
+
+<!-- Add Content Modal -->
+<div class="ov" id="addModal" onclick="if(event.target===this)closeAddModal()">
+<div class="modal" style="width:540px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px"><div class="m-title">添加内容</div><div onclick="closeAddModal()" style="cursor:pointer;font-size:18px;color:var(--ink3);padding:4px 8px;border-radius:6px;line-height:1;transition:background .15s" onmouseover="this.style.background='var(--p2)'" onmouseout="this.style.background=''">×</div></div>
+  <div class="m-sub">粘贴链接、截图或写笔记——AI 自动解析并归类到你的知识库</div>
+  <div style="display:flex;gap:0;border:1px solid var(--p3);border-radius:var(--r8);overflow:hidden;margin-bottom:16px">
+    <div class="skpt on" id="at-link" onclick="switchAdd('link')">🔗 链接</div>
+    <div class="skpt" id="at-img" onclick="switchAdd('img')">📸 截图</div>
+    <div class="skpt" id="at-note" onclick="switchAdd('note')">📝 笔记</div>
+    <div class="skpt" id="at-file" onclick="switchAdd('file')">📄 文件</div>
+  </div>
+  <div id="add-link"><div class="m-lbl">粘贴链接</div><div style="display:flex;gap:8px;margin-bottom:11px"><input class="m-in" id="add-url" style="margin-bottom:0;flex:1" placeholder="https://…" oninput="document.getElementById('add-prev').style.display='none'"/><button class="mbtn cf" style="white-space:nowrap;padding:9px 15px" onclick="parseLink()">解析</button></div><div id="add-prev" style="display:none;border:1px solid var(--acm);border-radius:var(--r8);padding:13px;background:var(--acl);margin-bottom:13px"><div style="display:flex;gap:9px"><span style="font-size:18px">📰</span><div><div style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:3px">为什么大多数 AI Agent 都失败了</div><div style="font-size:12px;color:var(--ink2);line-height:1.55;margin-bottom:7px">Agent 失败的根本原因不是技术，而是任务边界模糊……</div><div class="row"><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:var(--w);color:var(--ink2)">Agent设计</span><span style="font-size:10px;padding:2px 7px;border-radius:8px;background:var(--w);color:var(--ink2)">产品思维</span></div></div></div></div></div>
+  <div id="add-img" style="display:none"><div style="border:2px dashed var(--p4);border-radius:var(--r12);padding:36px 22px;text-align:center;cursor:pointer;background:var(--p2);transition:all .2s" onclick="T('选择图片文件')" ondragover="event.preventDefault();this.style.borderColor='var(--ac3)'" ondragleave="this.style.borderColor='var(--p4)'"><div style="font-size:28px;margin-bottom:7px;opacity:.45">📸</div><div style="font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:3px">拖入截图或点击上传</div><div style="font-size:11.5px;color:var(--ink3)">支持 PNG/JPG/WebP，AI 自动 OCR 识别</div></div><button class="btn bo" style="width:100%;justify-content:center;margin-top:10px" onclick="T('从剪贴板粘贴')">📋 从剪贴板粘贴</button></div>
+  <div id="add-note" style="display:none"><input class="m-in" placeholder="标题（可选）"/><textarea class="m-ta" style="min-height:130px" placeholder="写下你的想法、笔记……支持 Markdown"></textarea><button class="btn bo" style="width:100%;justify-content:center" onclick="T('开始语音转文字…')">🎤 语音输入</button></div>
+  <div id="add-file" style="display:none"><div style="border:2px dashed var(--p4);border-radius:var(--r12);padding:36px 22px;text-align:center;cursor:pointer;background:var(--p2)" onclick="T('选择文件：PDF/TXT/MD')"><div style="font-size:28px;margin-bottom:7px;opacity:.45">📄</div><div style="font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:3px">上传文件</div><div style="font-size:11.5px;color:var(--ink3)">支持 PDF、TXT、Markdown</div></div></div>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--p3)"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px"><div class="m-lbl" style="margin-bottom:0">归入领域</div><div style="font-size:11px;color:var(--ac2)" id="add-cl-lbl">✦ AI 已自动识别</div></div><div class="row" style="margin-bottom:12px"><div class="m-chip sel" onclick="this.classList.toggle('sel')">🤖 AI & 产品</div><div class="m-chip" onclick="this.classList.toggle('sel')">💡 商业思维</div><div class="m-chip" onclick="this.classList.toggle('sel')">🎨 设计</div><div class="m-chip" onclick="this.classList.toggle('sel')">🧠 认知与学习</div><div class="m-chip" onclick="openDomainModal()" style="border-style:dashed;color:var(--ink3)">+ 新建</div></div><div class="m-lbl">顺手加入我的想法 <span style="font-weight:400;color:var(--ink3);font-size:11px">（可选）</span></div><div style="display:flex;gap:7px"><textarea class="m-ta" style="min-height:55px;flex:1;margin-bottom:0" placeholder="这条内容让我想到…"></textarea><button style="width:38px;height:38px;border-radius:var(--r8);border:1px solid var(--p3);background:var(--w);cursor:pointer;font-size:17px;flex-shrink:0;align-self:flex-start;transition:all .15s" onclick="T('录制语音想法…')">🎤</button></div></div>
+  <div class="m-acts"><button class="mbtn cn" onclick="closeAddModal()">取消</button><button class="mbtn cf" onclick="saveContent()">保存到知识库</button></div>
+</div>
+</div>
+
+<!-- Tracking Setup Modal -->
+<div class="ov" id="trackModal" onclick="if(event.target===this)closeTrackModal()">
+<div class="modal" style="width:500px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px"><div class="m-title">设置知识追踪</div><div onclick="closeTrackModal()" style="cursor:pointer;font-size:18px;color:var(--ink3);padding:4px 8px;border-radius:6px;line-height:1;transition:background .15s" onmouseover="this.style.background='var(--p2)'" onmouseout="this.style.background=''">×</div></div>
+  <div class="m-sub">告诉 AI 你关注什么，它每天帮你找内容，你只需决定是否入库</div>
+  <div class="m-lbl">关注方向</div>
+  <textarea class="m-ta" style="min-height:72px" placeholder="例如：我关注 AI 产品设计的最新动态，尤其是 Agent 相关的实践案例…">我关注 AI 产品设计的最新动态，尤其是 Agent 相关的实践案例；以及 SaaS 增长策略，偏向 PLG 方向的内容。</textarea>
+  <div class="m-lbl">追踪关键词</div>
+  <div id="track-kws" style="margin-bottom:10px">
+    <div class="track-kw"><div class="track-dot"></div><span style="flex:1">AI Agent 产品设计</span><span class="track-kw-meta">→ AI & 产品</span><span style="margin-left:8px;font-size:11px;color:var(--rs);cursor:pointer" onclick="this.closest('.track-kw').remove()">删除</span></div>
+    <div class="track-kw"><div class="track-dot"></div><span style="flex:1">SaaS增长 PLG</span><span class="track-kw-meta">→ 商业思维</span><span style="margin-left:8px;font-size:11px;color:var(--rs);cursor:pointer" onclick="this.closest('.track-kw').remove()">删除</span></div>
+    <div class="track-kw"><div class="track-dot" style="background:var(--gd2)"></div><span style="flex:1">UI设计趋势</span><span class="track-kw-meta">→ 设计</span><span style="margin-left:8px;font-size:11px;color:var(--rs);cursor:pointer" onclick="this.closest('.track-kw').remove()">删除</span></div>
+  </div>
+  <div style="display:flex;gap:7px;margin-bottom:16px"><input class="m-in" id="new-kw" style="margin-bottom:0;flex:1" placeholder="添加关键词…"/><button class="mbtn cf" style="padding:9px 14px" onclick="addKw()">+ 添加</button></div>
+  <div class="m-lbl">优先渠道</div>
+  <div class="row" style="margin-bottom:16px">
+    <div class="track-ch on" onclick="this.classList.toggle('on')">📱 微信公众号</div>
+    <div class="track-ch on" onclick="this.classList.toggle('on')">📰 36kr / 少数派</div>
+    <div class="track-ch" onclick="this.classList.toggle('on')">🐦 X (Twitter)</div>
+    <div class="track-ch on" onclick="this.classList.toggle('on')">📡 RSS 订阅</div>
+    <div class="track-ch" onclick="this.classList.toggle('on')">🔬 学术论文</div>
+  </div>
+  <div class="m-lbl">推送频率</div>
+  <div style="display:flex;gap:7px;margin-bottom:4px"><label style="flex:1;border:1px solid var(--p3);border-radius:var(--r8);padding:8px 10px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="freq" value="daily" checked style="accent-color:var(--ac)"> 每日推送</label><label style="flex:1;border:1px solid var(--p3);border-radius:var(--r8);padding:8px 10px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px"><input type="radio" name="freq" value="weekly" style="accent-color:var(--ac)"> 每周汇总</label></div>
+  <div class="m-acts"><button class="mbtn cn" onclick="closeTrackModal()">取消</button><button class="mbtn cf" onclick="saveTrack()">保存设置</button></div>
+</div>
+</div>
+
+<!-- Domain Modal -->
+<div class="ov" id="domainModal" onclick="if(event.target===this)closeDomainModal()">
+<div class="modal" style="width:460px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px"><div class="m-title">新建知识领域</div><div onclick="closeDomainModal()" style="cursor:pointer;font-size:18px;color:var(--ink3);padding:4px 8px;border-radius:6px;line-height:1" onmouseover="this.style.background='var(--p2)'" onmouseout="this.style.background=''">×</div></div>
+  <div class="m-sub">为你的知识划定一片专属领地，AI 自动整理归类</div>
+  <div class="m-lbl">领域名称</div>
+  <input class="m-in" id="dm-name" placeholder="例如：AI 产品、投资研究、健身与营养…" oninput="prevDom()"/>
+  <div class="m-lbl">描述（可选）</div>
+  <input class="m-in" id="dm-desc" placeholder="这个领域主要收录什么内容？"/>
+  <div class="m-lbl">图标</div>
+  <div id="ico-picker" class="row" style="margin-bottom:14px"></div>
+  <div class="m-lbl">颜色</div>
+  <div id="col-picker" class="row" style="margin-bottom:16px"></div>
+  <div style="display:flex;align-items:center;gap:11px;padding:12px;background:var(--p2);border-radius:var(--r8);border:1px solid var(--p3);margin-bottom:12px"><div id="prev-ico" style="width:38px;height:38px;border-radius:11px;background:#e8f2eb;display:flex;align-items:center;justify-content:center;font-size:19px">🤖</div><div><div id="prev-name" style="font-size:14px;font-weight:500;color:var(--ink3);font-style:italic">输入名称后预览…</div><div id="prev-desc" style="font-size:11px;color:var(--ink4);margin-top:1px">尚无内容</div></div></div>
+  <div class="m-acts"><button class="mbtn cn" onclick="closeDomainModal()">取消</button><button class="mbtn cf" onclick="saveDomain()">创建领域</button></div>
+</div>
+</div>
+
+<!-- Thought textarea sheet -->
+<div class="ta-ov" id="taOv" onclick="if(event.target===this)closeTA()">
+  <div class="ta-sheet">
+    <div style="font-size:11.5px;color:var(--gd2);font-weight:500;margin-bottom:9px" id="ta-lbl">✏️ 添加文字想法</div>
+    <textarea class="ta-in" id="ta-in" placeholder="写下你对这条内容的看法、联想，或者它能怎么用……"></textarea>
+    <div class="ta-acts"><button class="ta-btn cn" onclick="closeTA()">取消</button><button class="ta-btn sv" onclick="saveTA()">保存想法</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Data ──
+const DOMAINS={
+  ai:{icon:'🤖',name:'AI & 产品',bg:'#e8f2eb',meta:'23 条内容 · 3小时前更新',total:23,thoughts:8,topics:4,weekly:'本周 +5'},
+  biz:{icon:'💡',name:'商业思维',bg:'#f5f0e0',meta:'11 条内容 · 昨天更新',total:11,thoughts:4,topics:3,weekly:'本周 +2'},
+  design:{icon:'🎨',name:'设计',bg:'#f0eaf8',meta:'8 条内容 · 3天前更新',total:8,thoughts:2,topics:2,weekly:'本周 +1'},
+  cog:{icon:'🧠',name:'认知与学习',bg:'#e6eef5',meta:'5 条内容 · 上周更新',total:5,thoughts:1,topics:2,weekly:'本周 +0'},
+};
+const domC={ai:'#e8f2eb',biz:'#f5f0e0',design:'#f0eaf8',cog:'#e6eef5'};
+const domTC={ai:'#085041',biz:'#633806',design:'#26215C',cog:'#0d3a5c'};
+const domN={ai:'AI & 产品',biz:'商业思维',design:'设计',cog:'认知与学习'};
+const ITEMS={
+  ai:[
+    {id:1,icon:'📰',title:'为什么大多数 AI Agent 都失败了——产品视角的反思',source:'浏览器插件',time:'3小时前',topic:'agent',tracked:false,summary:'Agent 失败的根本原因不是技术，而是任务边界模糊。用户无法判断 Agent 的能力范围，导致期望管理失败。好的 Agent 产品应该先做减法，明确一件事做到极致。',tags:['Agent设计','产品思维','用户期望'],thought:'跟我做知识库产品的判断完全吻合——先解决一个核心痛点，别想着大而全。Agent 的边界问题和知识库的采集问题，本质上都是"范围感知"问题。',md:`<h3>核心论点</h3><ul><li>任务边界不清晰是根本原因</li><li>用户期望 ≠ Agent 实际能力</li></ul><h3>三个失败模式</h3><ul><li>过度承诺：宣传"无所不能"</li><li>反馈缺失：用户不知道 Agent 在做什么</li><li>错误无法恢复：一旦失败用户放弃</li></ul>`},
+    {id:2,icon:'🔗',title:'Notion AI vs Claude：知识库场景深度对比',source:'链接解析',time:'昨天',topic:'product',tracked:false,summary:'两者定位根本不同：Notion AI 是工具增强，Claude 是思维伙伴。在非结构化的个人思考整合上，Claude 的语境理解更强。',tags:['工具对比','知识管理'],thought:null,md:null},
+    {id:3,icon:'📸',title:'【截图识别】Prompt 工程中的 Chain-of-Thought 示意图',source:'截图OCR',time:'2天前',topic:'prompt',tracked:false,summary:'CoT 的核心是让模型"先想后答"，通过中间步骤的显化来减少跳跃性错误。图中对比了 Standard / CoT / Self-Consistency 三种方式的准确率差异。',tags:['Prompt工程','CoT','推理'],thought:'Self-Consistency 的思路可以用在知识库检索上——多路召回取交集，比单路语义检索更稳定。值得深挖。',md:null},
+    {id:4,icon:'📰',title:'RAG 检索增强生成：从理论到产品化实践',source:'浏览器插件',time:'3天前',topic:'llm',tracked:false,summary:'RAG 解决了 LLM 知识时效性和私有数据问题，核心是检索质量。',tags:['RAG','LLM','检索'],thought:null,md:null},
+    {id:5,icon:'📝',title:'个人笔记：对话框产品的三个设计原则',source:'手动记录',time:'上周',topic:'product',tracked:false,summary:'1.边界可感知 2.过程可见 3.可介入。这三条原则也适用于知识库产品。',tags:['产品设计','对话框','AI交互'],thought:'这三条其实也适用于知识库产品，用户要能感知到知识库的边界。',md:null},
+  ],
+  biz:[
+    {id:7,icon:'📰',title:'定价策略框架：价值定价 vs 成本定价',source:'浏览器插件',time:'昨天',topic:'pricing',tracked:true,summary:'价值定价从客户愿意支付的价格出发，成本定价从成本加成出发。B2B SaaS 应优先锚定价值。',tags:['定价','商业模式'],thought:'我们的产品定价应该锚定在"节省的时间成本"上，而不是功能数量。',md:null},
+    {id:8,icon:'🔗',title:'SaaS 增长飞轮：PLG 与 SLG 的协同',source:'链接解析',time:'3天前',topic:'growth',tracked:false,summary:'PLG 靠产品体验自传播，SLG 靠销售团队推进。两者协同的关键在于 PQL 的识别。',tags:['增长','PLG','SaaS'],thought:null,md:null},
+  ],
+  design:[
+    {id:9,icon:'📸',title:'【截图】Material You 设计系统核心变化',source:'截图OCR',time:'3天前',topic:'system',tracked:false,summary:'Material You 引入动态颜色系统，根据用户壁纸自动生成主题色。',tags:['设计系统','Material'],thought:null,md:null},
+    {id:10,icon:'📰',title:'认知负荷与界面设计：减少用户思考的10个方法',source:'浏览器插件',time:'1周前',topic:'ux',tracked:false,summary:'认知负荷分为内在、外在、关联三类。减少外在负荷的关键是信息分层和渐进披露。',tags:['UX','认知负荷'],thought:'知识库最大的认知负荷来自"归类决策"，解法是让 AI 先自动归类，用户后确认。',md:null},
+  ],
+  cog:[
+    {id:11,icon:'📰',title:'费曼学习法的现代诠释：用输出倒逼输入',source:'浏览器插件',time:'1周前',topic:'learning',tracked:false,summary:'费曼技巧核心：用简单语言解释给他人。输出是检验理解深度的最好方式。',tags:['学习方法','费曼'],thought:'这正是我们产品"个人想法"模块的价值——写下来才能检验自己是否真的理解。',md:null},
+  ],
+};
+
+// ── View routing ──
+let curDomain='ai', curFilter='all', contF='all', domF=null, contSearch='';
+
+function V(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
+  const el=document.getElementById('view-'+name);
+  if(el) el.classList.remove('hidden');
+  document.querySelectorAll('.sbi').forEach(i=>i.classList.remove('on'));
+  const sb=document.getElementById('sbi-'+name);
+  if(sb) sb.classList.add('on');
+  else document.getElementById('sbi-home')?.classList.add('on');
+  if(name==='contents') renderContents();
+}
+
+function enterDomain(key,sbEl){
+  curDomain=key; curFilter='all';
+  document.querySelectorAll('.sb-dom').forEach(d=>d.classList.remove('on'));
+  if(sbEl) sbEl.classList.add('on');
+  const d=DOMAINS[key];
+  document.getElementById('dv-ico').textContent=d.icon;
+  document.getElementById('dv-ico').style.background=d.bg;
+  document.getElementById('dv-name').textContent=d.name;
+  document.getElementById('dv-meta').textContent=d.meta;
+  document.getElementById('dv-total').textContent=d.total;
+  document.getElementById('dv-thoughts').textContent=d.thoughts;
+  document.getElementById('dv-topics').textContent=d.topics;
+  document.getElementById('dv-weekly').textContent=d.weekly;
+  document.querySelectorAll('#dv-chips .chip').forEach(c=>c.classList.remove('on'));
+  document.querySelector('#dv-chips .chip')?.classList.add('on');
+  renderDomList();
+  V('domain');
+}
+
+function renderDomList(){
+  const data=(ITEMS[curDomain]||[]).filter(i=>curFilter==='all'||i.topic===curFilter);
+  document.getElementById('dv-list').innerHTML=data.map(itemCard).join('');
+}
+
+function filterChip(el,f){
+  curFilter=f;
+  document.querySelectorAll('#dv-chips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderDomList();
+  T(f==='all'?'显示全部':'筛选：'+el.textContent.replace(/\d+/g,'').trim());
+}
+
+function itemCard(i){
+  return `<div class="ci" id="ci-${i.id}">
+    <div class="ci-main" onclick="openItemById(${i.id})">
+      <div class="ci-src">${i.icon}</div>
+      <div class="ci-body">
+        <div class="ci-r1"><div class="ci-title">${i.title}</div><div class="ci-sl">${i.tracked?'<span class="ci-track">📡 追踪</span>':''} ${i.source} · ${i.time}</div></div>
+        <div class="ci-sum">${i.summary||''}</div>
+        <div class="ci-ft">${i.tags.slice(0,3).map(t=>`<span class="ci-tag">${t}</span>`).join('')}${i.thought?`<span class="ci-th">🎤 有想法</span>`:''}</div>
+      </div>
+    </div>
+    ${i.thought?`<div class="ci-tp"><div class="ci-tl">🎤 我的想法</div><div class="ci-tt">${i.thought}</div></div>`:''}
+    ${i.md?`<div id="exp-${i.id}" class="ci-exp" style="padding:8px 15px;font-size:11px;cursor:pointer;color:var(--ink3)" onclick="toggleMD(${i.id})">▸ 查看原文结构</div><div class="ci-md" id="md-${i.id}">${i.md}</div>`:''}
+    <div class="ci-acts">
+      <div class="ci-ab" onclick="openTA(null,${i.id})">${i.thought?'✏️ 补充想法':'✏️ 加入我的想法'}</div>
+      <div class="ci-ab" onclick="toggleVoice()">🎤 语音</div>
+      <div class="ci-exp" onclick="openItemById(${i.id})">详情 →</div>
+    </div>
+  </div>`;
+}
+
+function toggleMD(id){
+  const md=document.getElementById('md-'+id);
+  const btn=document.getElementById('exp-'+id);
+  if(!md||!btn) return;
+  md.classList.toggle('open');
+  btn.textContent=md.classList.contains('open')?'▾ 收起原文结构':'▸ 查看原文结构';
+}
+
+function openItemById(id){
+  const all=Object.values(ITEMS).flat();
+  const item=all.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('cv-title').textContent=item.title;
+  document.getElementById('cv-time').textContent=item.time;
+  document.querySelectorAll('.cv-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.cv-pane').forEach(p=>p.classList.remove('on'));
+  document.querySelector('.cv-tab')?.classList.add('on');
+  document.getElementById('ct-md')?.classList.add('on');
+  V('content');
+}
+
+function cvTab(el,id){
+  document.querySelectorAll('.cv-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.cv-pane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById(id)?.classList.add('on');
+}
+
+// ── All contents ──
+function renderContents(){
+  const all=[];
+  Object.entries(ITEMS).forEach(([dom,arr])=>arr.forEach(i=>all.push({...i,domain:dom})));
+  const filtered=all.filter(i=>{
+    if(domF&&i.domain!==domF) return false;
+    if(contF==='thought'&&!i.thought) return false;
+    if(contF==='screenshot'&&i.icon!=='📸') return false;
+    if(contF==='link'&&i.icon!=='🔗') return false;
+    if(contF==='note'&&i.icon!=='📝') return false;
+    if(contF==='article'&&i.icon!=='📰') return false;
+    if(contF==='track'&&!i.tracked) return false;
+    if(contSearch){const q=contSearch.toLowerCase();return i.title.toLowerCase().includes(q)||(i.summary||'').toLowerCase().includes(q)||i.tags.some(t=>t.toLowerCase().includes(q));}
+    return true;
+  });
+  document.getElementById('cont-count').textContent=`显示 ${filtered.length} 条内容`;
+  document.getElementById('cont-list').innerHTML=filtered.map(i=>`
+    <div class="ci" onclick="openItemById(${i.id})"><div class="ci-main"><div class="ci-src">${i.icon}</div><div class="ci-body"><div class="ci-r1"><div class="ci-title">${i.title}</div><div class="ci-sl">${i.tracked?'<span class="ci-track">📡 追踪</span>':''} ${i.source} · ${i.time}</div></div><div class="ci-sum">${i.summary||''}</div><div class="ci-ft"><span class="ci-dom" style="background:${domC[i.domain]};color:${domTC[i.domain]}">${domN[i.domain]}</span>${i.tags.slice(0,2).map(t=>`<span class="ci-tag">${t}</span>`).join('')}${i.thought?`<span class="ci-th">🎤 有想法</span>`:''}</div></div></div></div>`).join('');
+}
+function setContF(el,type){contF=type;document.querySelectorAll('#view-contents .chip').forEach(c=>{if(['全部','📰 文章','🔗 链接','📸 截图','📝 笔记','🎤 有想法','📡 追踪收录'].some(l=>c.textContent.trim().includes(l.split(' ').pop())))c.classList.remove('on');});el.classList.add('on');renderContents();}
+function setDomF(el,dom){domF=domF===dom?null:dom;document.querySelectorAll('#view-contents .chip').forEach(c=>{if([domN.ai,domN.biz,domN.design,domN.cog].some(n=>c.textContent.includes(n)))c.classList.remove('on');});if(domF)el.classList.add('on');renderContents();}
+function filterContents(v){contSearch=v;renderContents();}
+
+// ── Home chat ──
+function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();if(!msg)return;
+  const box=document.getElementById('chat-msgs');
+  box.innerHTML+=`<div class="msg-u">${msg}</div>`;
+  box.innerHTML+=`<div class="msg-ai" id="thinking"><span style="opacity:.5">AI 正在检索知识库</span><span class="ldots"><span>.</span><span>.</span><span>.</span></span></div>`;
+  inp.value='';box.scrollTop=box.scrollHeight;
+  setTimeout(()=>{
+    const t=document.getElementById('thinking');
+    if(t)t.outerHTML=`<div class="msg-ai">根据你知识库中的内容，<strong>零摩擦采集</strong>是最该优先做的功能。来自「为什么大多数 AI Agent 都失败了」的结论支持这个判断——用户放弃的首因是不清楚工具边界。<br><br>我自己在「对话框产品的三个设计原则」里也记过：先解决一个核心痛点，不要大而全。<div class="msg-cite">引用：AI Agent 失败反思（想法）· 个人笔记：对话框产品三原则（想法）</div></div>`;
+    box.scrollTop=box.scrollHeight;
+  },1600);
+}
+
+// ── Agent chat ──
+function openAgentChat(){V('agent');}
+function sendAgent(){
+  const inp=document.getElementById('agent-in');
+  const msg=inp.value.trim();if(!msg)return;
+  const box=document.getElementById('agent-msgs');
+  box.innerHTML+=`<div class="ag-u">${msg}</div>`;
+  box.innerHTML+=`<div class="ag-ai" id="ag-thinking"><div class="ag-bubble"><span style="opacity:.5">正在检索你的知识库</span><span class="ldots"><span>.</span><span>.</span><span>.</span></span></div></div>`;
+  inp.value='';inp.style.height='auto';box.scrollTop=box.scrollHeight;
+  setTimeout(()=>{
+    const t=document.getElementById('ag-thinking');
+    if(t)t.outerHTML=`<div class="ag-ai"><div class="ag-bubble">基于我的判断框架，先做<strong>零摩擦采集</strong>。任务边界要清晰：只做"存进来"这一件事，做到极致。<br><br>我在「对话框产品的三个设计原则」里记过：先解决一个核心痛点，不要大而全。采集的成功标准就是让用户感觉"存进去了什么"而不只是"又收藏了一个链接"。</div><div class="ag-cite"><div class="ag-cite-lbl">📎 引用来源</div><div class="ag-cite-th" onclick="T('查看：我的想法')">🎤 我的想法：Agent 边界问题就是范围感知问题</div><div class="ag-cite-th" onclick="T('查看：我的想法')">🎤 我的想法：先解决一个核心痛点，不要大而全</div><div class="ag-cite-ref" onclick="T('查看：为什么大多数 AI Agent 都失败了')">↗ 为什么大多数 AI Agent 都失败了</div></div><div class="ag-acts"><div class="ag-act" onclick="T('已保存回答到知识库')">📥 保存到知识库</div><div class="ag-act" onclick="T('已复制')">📋 复制</div><div class="ag-act" onclick="T('继续追问')">↩ 追问</div></div></div>`;
+    box.scrollTop=box.scrollHeight;
+  },1800);
+}
+
+// ── Skills Tab ──
+function skTab(el,paneId){
+  document.querySelectorAll('.sk-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.sk-pane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById(paneId)?.classList.add('on');
+}
+
+// ── Skill modal ──
+const SKT={ai:['Prompt工程','产品方法论','LLM应用','Agent设计'],biz:['增长','定价','商业模式'],design:['UI设计','用户体验','设计系统'],cog:['学习方法','记忆','费曼学习']};
+let skItemsExp=false, skVoiceRec=false;
+
+function openSkillModal(){
+  document.getElementById('sk-s1').style.display='block';
+  document.getElementById('sk-s2').style.display='none';
+  document.getElementById('sk-m-title').textContent='创建 Skill';
+  // reset chat
+  document.getElementById('sk-chat-msgs').innerHTML='<div style="color:var(--ink4);font-style:italic;font-size:12px">告诉 AI 你希望这个 Skill 如何回答问题，或者它主要用来做什么…</div>';
+  document.getElementById('sk-chat-in').value='';
+  renderSkTags();renderSkItems();
+  document.getElementById('skillModal').classList.add('show');
+}
+function closeSkillModal(){document.getElementById('skillModal').classList.remove('show');}
+
+function renderSkTags(){
+  const chips=document.querySelectorAll('#sk-doms .m-chip');
+  const keys=['ai','biz','design','cog'];
+  let tags=[];chips.forEach((c,i)=>{if(c.classList.contains('sel'))tags.push(...(SKT[keys[i]]||[]));});
+  const el=document.getElementById('sk-tags');
+  if(!el)return;
+  el.innerHTML=tags.length?tags.map(t=>`<div class="m-chip sel" onclick="this.classList.toggle('sel')">${t}</div>`).join(''):'<span style="font-size:12px;color:var(--ink4)">请先选择领域</span>';
+}
+
+function renderSkItems(){
+  const list=document.getElementById('sk-items');
+  if(!list)return;
+  list.innerHTML=Object.values(ITEMS).flat().slice(0,8).map(i=>`<div class="sk-item-row"><input type="checkbox" checked style="accent-color:var(--ac)"><div><div class="sk-ititle">${i.title}</div><div class="sk-imeta">${i.source} · ${i.time}</div>${i.thought?`<div class="sk-ith">🎤 有我的想法</div>`:''}</div></div>`).join('');
+}
+
+function toggleSkItems(){
+  skItemsExp=!skItemsExp;
+  const wrap=document.getElementById('sk-items-wrap');
+  wrap.style.display=skItemsExp?'block':'none';
+  const btn=wrap.previousElementSibling.querySelector('div:last-child');
+  if(btn)btn.textContent=skItemsExp?'收起 ▴':'展开选择 ▸';
+}
+
+function addSkChat(){
+  const inp=document.getElementById('sk-chat-in');
+  const msg=inp.value.trim();if(!msg)return;
+  const box=document.getElementById('sk-chat-msgs');
+  // clear placeholder
+  if(box.querySelector('div[style*="italic"]')) box.innerHTML='';
+  box.innerHTML+=`<div style="background:var(--ac);color:#fff;padding:5px 10px;border-radius:10px 10px 3px 10px;font-size:12.5px;margin:3px 0;align-self:flex-end;display:inline-block;max-width:90%;float:right;clear:both">${msg}</div><div style="clear:both"></div>`;
+  inp.value='';inp.style.height='auto';
+  box.scrollTop=box.scrollHeight;
+}
+
+function toggleSkVoice(){
+  skVoiceRec=!skVoiceRec;
+  const btn=document.getElementById('sk-voice-btn');
+  if(skVoiceRec){btn.style.background='var(--rl)';btn.style.borderColor='#d4a0a0';T('语音输入中…');setTimeout(()=>{if(skVoiceRec)toggleSkVoice();},5000);}
+  else{btn.style.background='';btn.style.borderColor='';const box=document.getElementById('sk-chat-msgs');if(box.querySelector('div[style*="italic"]'))box.innerHTML='';box.innerHTML+=`<div style="background:var(--ac);color:#fff;padding:5px 10px;border-radius:10px 10px 3px 10px;font-size:12.5px;margin:3px 0;display:inline-block;max-width:90%;float:right;clear:both">帮我分析 AI 产品设计问题，体现我在 Agent 边界上的个人观点</div><div style="clear:both"></div>`;T('语音已识别');}
+}
+
+function genSkill(){
+  const btn=document.getElementById('sk-gen-btn');
+  btn.innerHTML='AI 生成中 <span class="ldots"><span>.</span><span>.</span><span>.</span></span>';
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.innerHTML='✦ AI 生成 Skill';btn.disabled=false;
+    document.getElementById('sk-s1').style.display='none';
+    document.getElementById('sk-s2').style.display='block';
+    document.getElementById('sk-m-title').textContent='确认 Skill';
+    const n=document.getElementById('sk-name').value;
+    const pn=document.getElementById('sk-prev-name');if(pn)pn.value=n;
+    skPrev('ov');
+  },1800);
+}
+
+function skPrev(tab){
+  ['ov','kn','pr','ts'].forEach(t=>{
+    const p=document.getElementById('spv-'+t);
+    const b=document.getElementById('spt-'+t);
+    if(p)p.style.display=t===tab?'block':'none';
+    if(b)b.classList.toggle('on',t===tab);
+  });
+}
+function backSkill(){document.getElementById('sk-s1').style.display='block';document.getElementById('sk-s2').style.display='none';document.getElementById('sk-m-title').textContent='创建 Skill';}
+function saveSkill(){
+  closeSkillModal();
+  const name=document.getElementById('sk-prev-name')?.value||'AI 产品顾问';
+  T(`Skill「${name}」已保存 ✓`);
+  // Navigate to skills page
+  setTimeout(()=>V('skills'),300);
+}
+
+// ── Add content ──
+function openAddModal(){document.getElementById('addModal').classList.add('show');switchAdd('link');}
+function closeAddModal(){document.getElementById('addModal').classList.remove('show');}
+function switchAdd(type){['link','img','note','file'].forEach(t=>{document.getElementById('add-'+t).style.display=t===type?'block':'none';document.getElementById('at-'+t).classList.toggle('on',t===type);});}
+function parseLink(){const url=document.getElementById('add-url').value.trim();if(!url){T('请输入链接');return;}document.getElementById('add-cl-lbl').textContent='✦ AI 正在识别…';setTimeout(()=>{document.getElementById('add-prev').style.display='block';document.getElementById('add-cl-lbl').textContent='✦ AI 已识别 → AI & 产品';T('解析完成，已自动归类');},1600);}
+function saveContent(){closeAddModal();T('内容已保存，AI 正在整理归类…');setTimeout(()=>T('已添加到「AI & 产品」✓'),2000);}
+
+// ── Voice (content detail) ──
+let isRec=false;
+function toggleVoice(){
+  const btn=document.getElementById('voiceBtn');
+  if(!btn)return;
+  isRec=!isRec;
+  if(isRec){btn.classList.add('rec');btn.textContent='⏹ 停止录音';T('录音中…');setTimeout(()=>{if(isRec)toggleVoice();},5000);}
+  else{btn.classList.remove('rec');btn.textContent='🎤 录制语音想法';T('语音已保存，AI 正在转文字…');setTimeout(()=>T('想法已添加 ✓'),1800);}
+}
+
+// ── Thought sheet ──
+function openTA(editBtn,itemId){
+  const ta=document.getElementById('ta-in');
+  if(editBtn){const t=editBtn.closest('.th-card').querySelector('.th-txt').textContent.trim();ta.value=t;document.getElementById('ta-lbl').textContent='✏️ 编辑想法';}
+  else{ta.value='';document.getElementById('ta-lbl').textContent='✏️ 添加文字想法';}
+  document.getElementById('taOv').classList.add('show');
+  setTimeout(()=>ta.focus(),200);
+}
+function closeTA(){document.getElementById('taOv').classList.remove('show');}
+function saveTA(){const v=document.getElementById('ta-in').value.trim();if(!v){T('请输入内容');return;}closeTA();T('想法已保存 ✓');}
+
+// ── Tracking ──
+function toggleTrackDetail(id){
+  const det=document.getElementById('tdet-'+id);
+  const btn=document.getElementById('texp-'+id);
+  if(!det||!btn)return;
+  det.classList.toggle('open');
+  btn.textContent=det.classList.contains('open')?'▾ 收起摘要':'▸ 展开摘要';
+}
+function trackInbox(id){
+  const btn=document.getElementById('tinbox-'+id);
+  if(!btn)return;
+  btn.textContent='✓ 已入库';
+  btn.classList.add('done');
+  T('已入库到「AI & 产品」✓');
+}
+function openTrackModal(){document.getElementById('trackModal').classList.add('show');}
+function closeTrackModal(){document.getElementById('trackModal').classList.remove('show');}
+function addKw(){const el=document.getElementById('new-kw');const v=el.value.trim();if(!v){T('请输入关键词');return;}document.getElementById('track-kws').innerHTML+=`<div class="track-kw"><div class="track-dot"></div><span style="flex:1">${v}</span><span class="track-kw-meta">→ 自动识别</span><span style="margin-left:8px;font-size:11px;color:var(--rs);cursor:pointer" onclick="this.closest('.track-kw').remove()">删除</span></div>`;el.value='';T('关键词已添加');}
+function saveTrack(){closeTrackModal();T('追踪设置已保存 ✓');}
+
+// ── Domain modal ──
+const ICOS=['🤖','💡','🎨','🧠','📈','🔬','📚','💼','🌱','⚡','🎯','🗺️','🎵','🏗️'];
+const COLS=[{bg:'#e8f2eb',dot:'#2d5a3d'},{bg:'#f5f0e0',dot:'#9a7020'},{bg:'#f0eaf8',dot:'#5a3d8a'},{bg:'#e6eef5',dot:'#3d6a8a'},{bg:'#faeae8',dot:'#8b3a2e'},{bg:'#f0f5e6',dot:'#5a7a2d'}];
+let selIco='🤖',selCol=0;
+function openDomainModal(){
+  selIco='🤖';selCol=0;
+  document.getElementById('dm-name').value='';document.getElementById('dm-desc').value='';
+  document.getElementById('ico-picker').innerHTML=ICOS.map(ic=>`<div onclick="pickIco('${ic}',this)" style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;border:2px solid ${ic===selIco?'var(--ac)':'transparent'};background:${ic===selIco?'var(--acl)':'var(--p2)'};transition:all .15s">${ic}</div>`).join('');
+  document.getElementById('col-picker').innerHTML=COLS.map((c,i)=>`<div onclick="pickCol(${i},this)" style="width:24px;height:24px;border-radius:50%;background:${c.dot};cursor:pointer;border:2px solid ${i===0?'var(--ink)':'transparent'};outline:${i===0?'2px solid var(--paper)':'none'};outline-offset:1px;transition:all .15s;flex-shrink:0"></div>`).join('');
+  prevDom();
+  document.getElementById('domainModal').classList.add('show');
+  setTimeout(()=>document.getElementById('dm-name').focus(),200);
+}
+function closeDomainModal(){document.getElementById('domainModal').classList.remove('show');}
+function pickIco(ic,el){selIco=ic;document.querySelectorAll('#ico-picker > div').forEach(d=>{d.style.borderColor='transparent';d.style.background='var(--p2)';});el.style.borderColor='var(--ac)';el.style.background='var(--acl)';prevDom();}
+function pickCol(i,el){selCol=i;document.querySelectorAll('#col-picker > div').forEach((d,j)=>{d.style.borderColor=j===i?'var(--ink)':'transparent';d.style.outline=j===i?'2px solid var(--paper)':'none';});prevDom();}
+function prevDom(){const n=document.getElementById('dm-name').value.trim();const d=document.getElementById('dm-desc').value.trim();const c=COLS[selCol];document.getElementById('prev-ico').textContent=selIco;document.getElementById('prev-ico').style.background=c.bg;document.getElementById('prev-name').textContent=n||'输入名称后预览…';document.getElementById('prev-name').style.color=n?'var(--ink)':'var(--ink3)';document.getElementById('prev-name').style.fontStyle=n?'normal':'italic';document.getElementById('prev-desc').textContent=d||'尚无内容';}
+function saveDomain(){const n=document.getElementById('dm-name').value.trim();if(!n){T('请输入领域名称');return;}closeDomainModal();T(`领域「${n}」已创建 ✓`);}
+
+// ── Community ──
+function setCommF(el,type){document.querySelectorAll('#view-community .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');T(type==='all'?'显示全部 Skills':'筛选：'+el.textContent.trim());}
+
+// ── Pricing billing toggle ──
+let isYearly=true;
+function toggleBilling(){
+  isYearly=!isYearly;
+  const knob=document.getElementById('billing-knob');
+  const toggle=document.getElementById('billing-toggle');
+  knob.style.transform=isYearly?'':'translateX(-20px)';
+  toggle.style.background=isYearly?'var(--ac)':'var(--p4)';
+  document.getElementById('pro-price').innerHTML=isYearly?'¥31 <span>/ 月</span>':'¥39 <span>/ 月</span>';
+  document.getElementById('team-price').innerHTML=isYearly?'¥23 <span>/ 人 / 月</span>':'¥29 <span>/ 人 / 月</span>';
+}
+
+// ── Toast ──
+let toastTimer;
+function T(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200);}
+
+// ── Init ──
+V('home');
+renderContents();
+</script>
+</body>
+</html>
